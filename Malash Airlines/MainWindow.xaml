@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" Height="30" Width="120" FontSize="20"/>
-        <TextBlock Text="Działa"/>
+        <TextBlock Text="nie działa"/>
         <TextBlock Text="Feature" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Window>
