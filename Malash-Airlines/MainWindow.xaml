@@ -8,5 +8,6 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" FontSize="24"/>
+        <TextBlock>Flight Number:</TextBlock>
     </Grid>
 </Window>
