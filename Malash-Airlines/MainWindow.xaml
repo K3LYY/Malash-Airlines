@@ -5,9 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        >
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" FontSize="24"/>
         <TextBlock>Flight Number:</TextBlock>
+        <Button Grid.Column="2" Margin="100,10,10,100" Content="Zaloguj" 
+                Style="{StaticResource roundedCorners}"
+                FontSize="15" Background="Blue"
+                Name="loginButton" Click="loginButtonClick"/>
     </Grid>
 </Window>

@@ -19,6 +19,14 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
+            //Uri iconUri = new Uri("..\\..\\..\\assets\\logoMalash.ico", UriKind.RelativeOrAbsolute);
+            //(this.Parent as Window).Icon = BitmapFrame.Create(iconUri);
+        }
+
+        private void loginButtonClick(object sender, RoutedEventArgs e)
+        {
+            loginWindow window = new loginWindow();
+            window.ShowDialog();
         }
     }
 }
