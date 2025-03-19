@@ -19,6 +19,8 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
+            SeatLayout layout = new SeatLayout();
+            layout.Show();
         }
     }
 }

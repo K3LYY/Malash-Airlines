@@ -1,0 +1,111 @@
+﻿<Window x:Class="Malash_Airlines.SeatLayout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Malash_Airlines"
+        mc:Ignorable="d"
+        Title="SeatLayout" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Boeing 737 Seat Selection" 
+                   FontSize="24" FontWeight="Bold" Margin="20" 
+                   HorizontalAlignment="Center"/>
+
+        <!-- Main Seat Layout -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                <!-- First Class Section -->
+                <TextBlock Text="First Class" FontWeight="Bold" FontSize="18" 
+                           HorizontalAlignment="Center" Margin="0,10"/>
+
+                <!-- First Class Rows -->
+                <Grid Name="FirstClassGrid" Margin="0,5,0,20">
+                    <Grid.RowDefinitions>
+                        <!-- Row Labels -->
+                        <RowDefinition Height="30"/>
+                        <!-- Rows 1-4 -->
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <!-- Row numbers -->
+                        <ColumnDefinition Width="50"/>
+                        <!-- Seat A -->
+                        <ColumnDefinition Width="50"/>
+                        <!-- Seat B -->
+                        <ColumnDefinition Width="80"/>
+                        <!-- Aisle -->
+                        <ColumnDefinition Width="50"/>
+                        <!-- Seat C -->
+                        <ColumnDefinition Width="50"/>
+                        <!-- Seat D -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Column Headers -->
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="4" Text="C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="5" Text="D" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Galley/Divider -->
+                <Border Height="30" Background="LightGray" Margin="40,5"/>
+
+                <!-- Economy Section -->
+                <TextBlock Text="Economy" FontWeight="Bold" FontSize="18" 
+                           HorizontalAlignment="Center" Margin="0,10"/>
+
+                <!-- Economy Class Rows -->
+                <Grid Name="EconomyGrid" Margin="0,5,0,20">
+                    <Grid.RowDefinitions>
+                        <!-- Row Labels -->
+                        <RowDefinition Height="30"/>
+                        <!-- Rows 5-30 -->
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <!-- Row numbers -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat A -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat B -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat C -->
+                        <ColumnDefinition Width="60"/>
+                        <!-- Aisle -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat D -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat E -->
+                        <ColumnDefinition Width="40"/>
+                        <!-- Seat F -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Column Headers -->
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="5" Text="D" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="6" Text="E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="7" Text="F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Button Grid.Row="2" Content="Confirm Selection" Padding="10,5" 
+                Margin="0,10,0,20" HorizontalAlignment="Center" 
+                Width="150" Height="30" Name="ConfirmButton" Click="ConfirmButton_Click"/>
+    </Grid>
+</Window>
