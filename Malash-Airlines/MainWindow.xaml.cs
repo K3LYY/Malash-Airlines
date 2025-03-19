@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Malash_Airlines
 {
@@ -19,14 +20,32 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
-            //Uri iconUri = new Uri("..\\..\\..\\assets\\logoMalash.ico", UriKind.RelativeOrAbsolute);
-            //(this.Parent as Window).Icon = BitmapFrame.Create(iconUri);
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
         {
             loginWindow window = new loginWindow();
             window.ShowDialog();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+            timer.Start();
+        }
+
+        public void Timer_Tick(object sender, EventArgs e)
+        {
+            
+            timelbl.Content = DateTime.Now.ToLongTimeString();
+            datelbl.Content = DateTime.Now.ToLongDateString();
+        }
+
+        private void Window_Loaded_1(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

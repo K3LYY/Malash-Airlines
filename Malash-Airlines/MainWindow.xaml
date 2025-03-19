@@ -6,7 +6,16 @@
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
+        Loaded="Window_Loaded"
         >
+    <Window.Resources>
+        <Style x:Key="dateLabels" TargetType="Label">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Grid.Column" Value="1"/>
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -20,9 +29,20 @@
         </Grid.RowDefinitions>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" FontSize="24"/>
         <TextBlock>Flight Number:</TextBlock>
+
+        <Image Source="/assets/logo.png"/>
+
         <Button Grid.Column="2" Margin="100,10,10,100" Content="Zaloguj" 
                 Style="{StaticResource roundedCorners}"
-                FontSize="15" Background="Blue"
+                FontSize="15" Background="Cyan"
                 Name="loginButton" Click="loginButtonClick"/>
+
+        
+            <Label Content="" Margin="0,0,0,25" HorizontalAlignment="Center" Name="timelbl" Style="{StaticResource dateLabels}"/>
+            <Label Content="" Margin="0,25,0,0" HorizontalAlignment="Center" Name="datelbl" Style="{StaticResource dateLabels}"/>
+        
+    
+        
     </Grid>
+
 </Window>
