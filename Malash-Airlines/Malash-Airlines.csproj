@@ -10,9 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="assets\logo.png">
+    <None Remove="assets\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Resource>
   </ItemGroup>
 
 </Project>

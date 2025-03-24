@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         Loaded="Window_Loaded"
+        Background="#211C84"
         >
     <Window.Resources>
         <Style x:Key="dateLabels" TargetType="Label">
@@ -14,7 +15,19 @@
             <Setter Property="Grid.Column" Value="1"/>
             <Setter Property="Grid.Row" Value="1"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Background" Value="#4D55CC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -27,19 +40,19 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" FontSize="24"/>
-        <TextBlock>Flight Number:</TextBlock>
-
-        <Image Source="/assets/logo.png"/>
+        <TextBlock Grid.Column="1" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="24" Foreground="White"/>
+        <StackPanel Grid.Row="0" Grid.Column="0" Margin="10" Background="#7A73D1">
+            <Image Source="/assets/logo.png" Height="120"/>
+        </StackPanel>
+        
 
         <Button Grid.Column="2" Margin="100,10,10,100" Content="Zaloguj" 
-                Style="{StaticResource roundedCorners}"
-                FontSize="15" Background="Cyan"
+                
                 Name="loginButton" Click="loginButtonClick"/>
 
         
-            <Label Content="" Margin="0,0,0,25" HorizontalAlignment="Center" Name="timelbl" Style="{StaticResource dateLabels}"/>
-            <Label Content="" Margin="0,25,0,0" HorizontalAlignment="Center" Name="datelbl" Style="{StaticResource dateLabels}"/>
+            <Label Content="" Margin="0,0,0,50" HorizontalAlignment="Center" Name="timelbl" Style="{StaticResource dateLabels}"/>
+            <Label Content="" Margin="0,50,0,0" HorizontalAlignment="Center" Name="datelbl" Style="{StaticResource dateLabels}"/>
         
     
         
