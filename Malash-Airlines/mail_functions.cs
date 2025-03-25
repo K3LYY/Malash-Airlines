@@ -11,7 +11,6 @@ namespace Malash_Airlines {
             // Load environment variables from .env file
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
             Env.Load(envPath);
-            MessageBox.Show(Environment.GetEnvironmentVariable("EMAIL_ADDRESS"));
         }
 
         private static string GenerateOneTimePassword() {
