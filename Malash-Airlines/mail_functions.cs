@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Mail;
+using System.IO;
 using DotNetEnv;
 
 namespace Malash_Airlines {
@@ -142,29 +143,24 @@ namespace Malash_Airlines {
             string oneTimePassword = GenerateOneTimePassword();
             lastCode = oneTimePassword;
             try {
-                // Odczytanie hasła z pliku .env
                 string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
                 string fromEmail = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
 
-                // Konfiguracja klienta SMTP dla Google
                 SmtpClient smtpClient = new SmtpClient("smtp.gmail.com") {
                     Port = 587,
                     Credentials = new NetworkCredential(fromEmail, emailPassword),
                     EnableSsl = true,
                 };
 
-                // Utworzenie wiadomości
                 MailMessage mailMessage = new MailMessage {
                     From = new MailAddress(fromEmail, "Malash airlines"),
                     Subject = "Jednorazowy kod",
                     Body = GetMailReadyPassword(oneTimePassword),
-                    IsBodyHtml = true, // Ustawienie IsBodyHtml na true
+                    IsBodyHtml = true,
                 };
 
-                // Dodanie odbiorcy
                 mailMessage.To.Add(email.Replace(" ", "").Replace("\n", ""));
 
-                // Wysłanie wiadomości
                 smtpClient.Send(mailMessage);
                 Console.WriteLine("Email został wysłany pomyślnie!");
             } catch (Exception ex) {
@@ -172,5 +168,68 @@ namespace Malash_Airlines {
             }
             return oneTimePassword;
         }
+
+        public static void SendBookingConfirmation(string email, string pdfFilePath) {
+            try {
+                string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+                string fromEmail = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
+
+                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com") {
+                    Port = 587,
+                    Credentials = new NetworkCredential(fromEmail, emailPassword),
+                    EnableSsl = true,
+                };
+
+                string htmlBody = """
+        <!DOCTYPE html>
+        <html lang="pl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Potwierdzenie Rezerwacji</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f5f5f5; padding: 20px; }
+                .container { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                h1 { color: #4CAF50; }
+                p { font-size: 16px; color: #333; }
+                .footer { margin-top: 20px; font-size: 12px; color: #777; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Potwierdzenie Rezerwacji</h1>
+                <p>Witaj,</p>
+                <p>W załączniku znajduje się potwierdzenie Twojej rezerwacji. Dziękujemy za wybranie Malash Airlines!</p>
+                <p>Życzymy przyjemnej podróży.</p>
+                <div class="footer">&copy; 2025 Malash Airlines. Wszelkie prawa zastrzeżone.</div>
+            </div>
+        </body>
+        </html>
+        """;
+
+                MailMessage mailMessage = new MailMessage {
+                    From = new MailAddress(fromEmail, "Malash Airlines"),
+                    Subject = "Potwierdzenie Rezerwacji",
+                    Body = htmlBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMessage.To.Add(email);
+
+                if (File.Exists(pdfFilePath)) {
+                    Attachment attachment = new Attachment(pdfFilePath);
+                    mailMessage.Attachments.Add(attachment);
+                } else {
+                    Console.WriteLine("Plik PDF nie istnieje.");
+                    return;
+                }
+
+                smtpClient.Send(mailMessage);
+                Console.WriteLine("Potwierdzenie rezerwacji zostało wysłane pomyślnie!");
+            } catch (Exception ex) {
+                Console.WriteLine($"Błąd podczas wysyłania potwierdzenia rezerwacji: {ex.Message}");
+            }
+        }
+
     }
 }
