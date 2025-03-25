@@ -19,6 +19,8 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
+            Database db = new Database();
+            MessageBox.Show(db.GetAirports().Count().ToString());
         }
     }
 }
