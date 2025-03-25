@@ -10,7 +10,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    <None Remove="assets\logo.png" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MySql.Data" Version="9.2.0" />
+		<PackageReference Include="DotNetEnv" Version="3.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="itext7" Version="9.1.0" />
+		
+	</ItemGroup>
 
 </Project>
