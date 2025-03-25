@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DotNetEnv;
 using MySql.Data.MySqlClient;
 
 namespace Malash_Airlines
@@ -10,7 +11,8 @@ namespace Malash_Airlines
 
         public Database(string connectionString)
         {
-            _connectionString = connectionString;
+            Env.Load();
+            _connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
         }
 
         public List<Flight> GetAvailableFlights()
