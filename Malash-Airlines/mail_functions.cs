@@ -3,12 +3,15 @@ using System.Net;
 using System.Net.Mail;
 using System.IO;
 using DotNetEnv;
+using System.Windows;
 
 namespace Malash_Airlines {
     internal class mail_functions {
         static mail_functions() {
             // Load environment variables from .env file
-            Env.Load();
+            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
+            Env.Load(envPath);
+            MessageBox.Show(Environment.GetEnvironmentVariable("EMAIL_ADDRESS"));
         }
 
         private static string GenerateOneTimePassword() {

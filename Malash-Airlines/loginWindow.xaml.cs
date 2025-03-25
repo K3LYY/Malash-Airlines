@@ -1,27 +1,85 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
-namespace Malash_Airlines
-{
-    /// <summary>
-    /// Logika interakcji dla klasy loginWindow.xaml
-    /// </summary>
-    public partial class loginWindow : Window
-    {
-        public loginWindow()
-        {
+namespace Malash_Airlines {
+    public partial class loginWindow : Window {
+        private Database _database;
+        private string _currentOneTimeCode;
+
+        public loginWindow() {
             InitializeComponent();
+            _database = new Database();
+
+            // Wire up event handlers
+            SendCodeButton.Click += SendCodeButton_Click;
+            LoginButton.Click += LoginButton_Click;
+        }
+
+        private void SendCodeButton_Click(object sender, RoutedEventArgs e) {
+            string email = EmailTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(email)) {
+                MessageBox.Show("Proszę wprowadzić adres e-mail.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try {
+                // Check if user exists
+                var existingUser = _database.GetUsers().FirstOrDefault(u => u.Email == email);
+
+                if (existingUser == null) {
+                    // User doesn't exist, create a new user
+                    string name = "User_" + Guid.NewGuid().ToString().Substring(0, 8);
+                    string tempPassword = GenerateTemporaryPassword();
+
+                    // Add user to database with a default role
+                    _database.AddUser(name, email, tempPassword, "customer");
+
+                    MessageBox.Show("Utworzono nowe konto.", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                // Send one-time password
+                _currentOneTimeCode = mail_functions.SendOneTimePassword(email);
+
+                MessageBox.Show("Kod weryfikacyjny został wysłany na Twój adres e-mail.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+            } catch (Exception ex) {
+                MessageBox.Show($"Wystąpił błąd: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoginButton_Click(object sender, RoutedEventArgs e) {
+            string email = EmailTextBox.Text.Trim();
+            string verificationCode = VerificationCodeTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(verificationCode)) {
+                MessageBox.Show("Proszę wprowadzić adres e-mail i kod weryfikacyjny.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (verificationCode == _currentOneTimeCode) {
+                // Find the user by email
+                var user = _database.GetUsers().FirstOrDefault(u => u.Email == email);
+
+                if (user != null) {
+                    // Successful login
+                    MessageBox.Show($"Witaj, {user.Name}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // TODO: Open main application window
+                    // For now, just close the login window
+                    this.Close();
+                } else {
+                    MessageBox.Show("Nie znaleziono użytkownika.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            } else {
+                MessageBox.Show("Nieprawidłowy kod weryfikacyjny.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string GenerateTemporaryPassword() {
+            // Simple temporary password generation 
+            // In a real-world scenario, use a more secure method
+            return Guid.NewGuid().ToString().Substring(0, 10);
         }
     }
 }

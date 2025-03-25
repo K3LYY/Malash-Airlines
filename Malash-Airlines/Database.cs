@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using DotNetEnv;
 using MySql.Data.MySqlClient;
@@ -9,8 +10,9 @@ namespace Malash_Airlines {
         public string _connectionString;
 
         public Database() {
-            Env.Load();
-            _connectionString = "connectionsting";
+            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
+            Env.Load(envPath);
+            _connectionString = envPath;
         }
 
         // Existing methods from the original file...

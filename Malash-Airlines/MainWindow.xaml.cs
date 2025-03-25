@@ -24,8 +24,9 @@ namespace Malash_Airlines
             panel.Show();
             SeatLayout layout = new SeatLayout();
             layout.Show();
-            Database db = new Database();
-            MessageBox.Show(db.GetAirports().Count().ToString());
+            //Database db = new Database();
+            //MessageBox.Show(db.GetAirports().Count().ToString());
+            mail_functions.SendOneTimePassword("kacper.zaluska7@gmail.com");
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
