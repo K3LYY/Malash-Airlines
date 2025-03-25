@@ -12,7 +12,7 @@ namespace Malash_Airlines {
         public Database() {
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
             Env.Load(envPath);
-            _connectionString = envPath;
+            _connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
         }
 
         // Existing methods from the original file...
