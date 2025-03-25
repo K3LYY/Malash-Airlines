@@ -9,6 +9,16 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="assets\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="MySql.Data" Version="9.2.0" />
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
