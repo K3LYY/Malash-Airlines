@@ -26,7 +26,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="itext7" Version="9.1.0" />
-		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
+		<PackageReference Include="QuestPDF" Version="2025.1.7" />
 	</ItemGroup>
 
 </Project>
