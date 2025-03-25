@@ -5,9 +5,144 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Malash Airlines" VerticalAlignment="Top" FontSize="24"/>
-        <TextBlock>Flight Number:</TextBlock>
-    </Grid>
-</Window>
+        Title="MainWindow" Height="600" Width="900" ResizeMode="NoResize"
+        Loaded="Window_Loaded"
+        Background="#F5F7FA"
+        >
+   
+    
+        
+        <Window.Resources>
+            <!-- Style for date and time labels -->
+            <Style x:Key="dateLabels" TargetType="Label">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Foreground" Value="#2C3E50"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <!-- Style for buttons -->
+            <Style TargetType="Button">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+                <Setter Property="Width" Value="150"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <!-- Gradient dla tła przycisku -->
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#4682B4" Offset="0"/>
+                            <!-- Ciemniejszy niebieski (SteelBlue) -->
+                            <GradientStop Color="#2F4F4F" Offset="1"/>
+                            <!-- Bardzo ciemny szary (DarkSlateGray) -->
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#5A9BD4" Offset="0"/>
+                                    <!-- Jaśniejszy niebieski przy najechaniu -->
+                                    <GradientStop Color="#3F6F6F" Offset="1"/>
+                                    <!-- Jaśniejszy szary przy najechaniu -->
+                                </LinearGradientBrush>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+                <Style.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Style.Resources>
+            </Style>
+
+            <!-- Style for navigation arrows -->
+            <Style x:Key="arrowButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="Foreground" Value="#2C3E50"/>
+                <Setter Property="Width" Value="50"/>
+                <Setter Property="Height" Value="50"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="#74B9FF"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Window.Resources>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <!-- Górny pasek nawigacyjny -->
+                <RowDefinition Height="*"/>
+                <!-- Główna zawartość -->
+                <RowDefinition Height="50"/>
+                <!-- Stopka z datą i godziną -->
+            </Grid.RowDefinitions>
+
+            <!-- Górny pasek nawigacyjny -->
+            <Grid Grid.Row="0" Background="#DDE7EE">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <!-- Logo -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Kategorie -->
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="100"/>
+                    <!-- Log In -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo -->
+                <Image Grid.Column="0" Source="/assets/logo.png" Height="100" Width="90" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                <!-- Kategorie -->
+                <Button Grid.Column="1" Content="KAT1" Width="Auto" Margin="5"/>
+                <Button Grid.Column="2" Content="KAT2" Width="Auto" Margin="5"/>
+                <Button Grid.Column="3" Content="KAT3" Width="Auto" Margin="5"/>
+                <Button Grid.Column="4" Content="KAT4" Width="Auto" Margin="5"/>
+
+                <!-- Przycisk Log In -->
+            <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick"/>
+            </Grid>
+
+            <!-- Główna zawartość -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <!-- Strzałka w lewo -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Obszar centralny -->
+                    <ColumnDefinition Width="50"/>
+                    <!-- Strzałka w prawo -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Strzałka w lewo -->
+                <Button Grid.Column="0" Content="←" Style="{StaticResource arrowButtonStyle}"/>
+
+                <!-- Obszar centralny (placeholder) -->
+                <Border Grid.Column="1" Background="White" BorderBrush="#2C3E50" BorderThickness="1" Margin="10"/>
+
+                <!-- Strzałka w prawo -->
+                <Button Grid.Column="2" Content="→" Style="{StaticResource arrowButtonStyle}"/>
+            </Grid>
+
+            <!-- Stopka z datą i godziną -->
+            <Label Grid.Row="2" Grid.Column="0" Name="timelbl" 
+               Style="{StaticResource dateLabels}" Margin="0,0,200,0"/>
+            <Label Grid.Row="2" Grid.Column="0" Name="datelbl" 
+               Style="{StaticResource dateLabels}" Margin="200,0,0,0"/>
+        </Grid>
+
+    </Window>

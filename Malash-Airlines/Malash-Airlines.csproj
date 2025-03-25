@@ -9,4 +9,14 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="assets\logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="assets\logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 </Project>

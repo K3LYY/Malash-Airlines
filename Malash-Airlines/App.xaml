@@ -4,6 +4,15 @@
              xmlns:local="clr-namespace:Malash_Airlines"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <Style x:Key="roundedCorners">
+            <Style.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="Window">
+            <Setter Property="FontFamily" Value="Microsoft Tai Le"/>
+        </Style>
     </Application.Resources>
 </Application>
