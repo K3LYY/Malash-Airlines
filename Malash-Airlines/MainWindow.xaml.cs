@@ -24,6 +24,8 @@ namespace Malash_Airlines
             panel.Show();
             SeatLayout layout = new SeatLayout();
             layout.Show();
+            Database db = new Database();
+            MessageBox.Show(db.GetAirports().Count().ToString());
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
