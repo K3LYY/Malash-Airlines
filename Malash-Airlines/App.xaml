@@ -13,7 +13,6 @@
         </Style>
         <Style TargetType="Window">
             <Setter Property="FontFamily" Value="Microsoft Tai Le"/>
-            <Setter Property="Background" Value="#211C84"/>
         </Style>
     </Application.Resources>
 </Application>

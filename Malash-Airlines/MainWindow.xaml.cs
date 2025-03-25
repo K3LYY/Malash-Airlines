@@ -20,6 +20,8 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
+            WorkerPanel panel = new WorkerPanel();
+            panel.Show();
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
@@ -43,9 +45,6 @@ namespace Malash_Airlines
             datelbl.Content = DateTime.Now.ToLongDateString();
         }
 
-        private void Window_Loaded_1(object sender, RoutedEventArgs e)
-        {
-
-        }
+        
     }
 }
