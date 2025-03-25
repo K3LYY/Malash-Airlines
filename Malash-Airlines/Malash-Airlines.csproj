@@ -19,4 +19,9 @@
     </Resource>
   </ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="itext7" Version="9.1.0" />
+		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
+	</ItemGroup>
+
 </Project>
