@@ -4,12 +4,12 @@ using System.Windows;
 
 namespace Malash_Airlines {
     public partial class loginWindow : Window {
-        private Database _database;
+        //private Database ;
         private string _currentOneTimeCode;
 
         public loginWindow() {
             InitializeComponent();
-            _database = new Database();
+            // = new Database();
 
             // Wire up event handlers
             SendCodeButton.Click += SendCodeButton_Click;
@@ -26,7 +26,7 @@ namespace Malash_Airlines {
 
             try {
                 // Check if user exists
-                var existingUser = _database.GetUsers().FirstOrDefault(u => u.Email == email);
+                var existingUser = Database.GetUsers().FirstOrDefault(u => u.Email == email);
 
                 if (existingUser == null) {
                     // User doesn't exist, create a new user
@@ -34,7 +34,7 @@ namespace Malash_Airlines {
                     string tempPassword = GenerateTemporaryPassword();
 
                     // Add user to database with a default role
-                    _database.AddUser(name, email, tempPassword, "customer");
+                    Database.AddUser(name, email, tempPassword, "user");
 
                     MessageBox.Show("Utworzono nowe konto.", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -59,7 +59,7 @@ namespace Malash_Airlines {
 
             if (verificationCode == _currentOneTimeCode) {
                 // Find the user by email
-                var user = _database.GetUsers().FirstOrDefault(u => u.Email == email);
+                var user = Database.GetUsers().FirstOrDefault(u => u.Email == email);
 
                 if (user != null) {
                     // Successful login

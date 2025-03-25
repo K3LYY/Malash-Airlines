@@ -20,12 +20,12 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
-            WorkerPanel panel = new WorkerPanel();
-            panel.Show();
-            SeatLayout layout = new SeatLayout();
-            layout.Show();
-            Database db = new Database();
-            MessageBox.Show(db.GetAirports().Count().ToString());
+            //WorkerPanel panel = new WorkerPanel();
+            //panel.Show();
+            //SeatLayout layout = new SeatLayout();
+            //layout.Show();
+            //Database db = new Database();
+            //MessageBox.Show(db.GetAirports().Count().ToString());
             //mail_functions.SendOneTimePassword("kacper.zaluska7@gmail.com");
         }
 
