@@ -27,12 +27,12 @@ namespace Malash_Airlines
             //Database db = new Database();
             //MessageBox.Show(db.GetAirports().Count().ToString());
             //mail_functions.SendOneTimePassword("kacper.zaluska7@gmail.com");
-           
+
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
         {
-            if(loginButton.Content.ToString() == "Log In")
+            if (loginButton.Content.ToString() == "Log In")
             {
                 loginWindow window = new loginWindow();
                 window.Show();
@@ -43,7 +43,7 @@ namespace Malash_Airlines
                 Process.Start(Process.GetCurrentProcess().MainModule.FileName);
                 Application.Current.Shutdown();
             }
-            
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -66,16 +66,37 @@ namespace Malash_Airlines
             {
                 DisplayNoFlightsMessage();
             }
-        }
             UpdateLoginButtonVisibility();
-
-
         }
+        
+
+    
+        
 
         public void Timer_Tick(object sender, EventArgs e)
         {
             timelbl.Content = DateTime.Now.ToLongTimeString();
             datelbl.Content = DateTime.Now.ToLongDateString();
+        }
+        private void UpdateLoginButtonVisibility()
+        {
+
+            if (AppSession.isLoggedIn == true)
+            {
+                //loginButton.Visibility = AppSession.isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
+                loginButton.Content = "Wyloguj";
+
+                Label lbl = new Label();
+
+                Label etykieta = new Label();
+                etykieta.Content = "Zalogowano mailem " + AppSession.eMail;
+                etykieta.FontSize = 18;
+                etykieta.Margin = new Thickness(10);
+                Grid.SetRow(etykieta, 2); // Umieszczenie etykiety w drugim wierszu Grid
+                Grid.SetColumn(etykieta, 2); // Umieszczenie etykiety w pierwszej kolumnie Grid
+                windowGrid.Children.Add(etykieta); // MojGrid to nazwa elementu Grid w XAML
+
+            }
         }
 
         private void LoadFlights()
@@ -100,25 +121,7 @@ namespace Malash_Airlines
                 return;
             }
 
-        private void UpdateLoginButtonVisibility()
-        {
-            
-            if(AppSession.isLoggedIn == true)
-            {
-                //loginButton.Visibility = AppSession.isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
-                loginButton.Content = "Wyloguj";
-
-                Label lbl = new Label();
-
-                Label etykieta = new Label();
-                etykieta.Content = "Zalogowano mailem "+ AppSession.eMail;
-                etykieta.FontSize = 18;
-                etykieta.Margin = new Thickness(10);
-                Grid.SetRow(etykieta, 2); // Umieszczenie etykiety w drugim wierszu Grid
-                Grid.SetColumn(etykieta, 2); // Umieszczenie etykiety w pierwszej kolumnie Grid
-                windowGrid.Children.Add(etykieta); // MojGrid to nazwa elementu Grid w XAML
-
-            }
+       
 
             Flight flight = currentFlights[index];
 
