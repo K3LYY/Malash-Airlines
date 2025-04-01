@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,10 +33,18 @@ namespace Malash_Airlines
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
         {
-            loginWindow window = new loginWindow();
-            window.ShowDialog();
-            MainWindow main = new MainWindow();
-            main.Close();
+            if(loginButton.Content.ToString() == "Log In")
+            {
+                loginWindow window = new loginWindow();
+                window.Show();
+                this.Close();
+            }
+            else
+            {
+                Process.Start(Process.GetCurrentProcess().MainModule.FileName);
+                Application.Current.Shutdown();
+            }
+            
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -44,7 +53,7 @@ namespace Malash_Airlines
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
             timer.Start();
-            
+            UpdateLoginButtonVisibility();
 
 
         }
@@ -58,25 +67,26 @@ namespace Malash_Airlines
 
         private void UpdateLoginButtonVisibility()
         {
-            // Sprawdź, czy kontrolka LoginButton została już zainicjalizowana
-            if (loginButton != null)
+            
+            if(AppSession.isLoggedIn == true)
             {
-                // Jeśli użytkownik jest zalogowany (IsLoggedIn == true), ukryj przycisk (Collapsed)
-                // W przeciwnym razie (IsLoggedIn == false), pokaż przycisk (Visible)
-                loginButton.Visibility = AppSession.isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
+                //loginButton.Visibility = AppSession.isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
+                loginButton.Content = "Wyloguj";
 
-                // Możesz tutaj dodać logikę dla innych elementów, np. przycisku "Wyloguj"
-                // lub wyświetlania nazwy zalogowanego użytkownika
-                // if (LogoutButton != null)
-                // {
-                //     LogoutButton.Visibility = AppSession.IsLoggedIn ? Visibility.Visible : Visibility.Collapsed;
-                // }
-                // if (UserInfoLabel != null)
-                // {
-                //     UserInfoLabel.Content = AppSession.IsLoggedIn ? $"Zalogowano jako: {AppSession.Username}" : string.Empty;
-                //     UserInfoLabel.Visibility = AppSession.IsLoggedIn ? Visibility.Visible : Visibility.Collapsed;
-                // }
+                Label lbl = new Label();
+
+                Label etykieta = new Label();
+                etykieta.Content = "Zalogowano mailem "+ AppSession.eMail;
+                etykieta.FontSize = 18;
+                etykieta.Margin = new Thickness(10);
+                Grid.SetRow(etykieta, 2); // Umieszczenie etykiety w drugim wierszu Grid
+                Grid.SetColumn(etykieta, 2); // Umieszczenie etykiety w pierwszej kolumnie Grid
+                windowGrid.Children.Add(etykieta); // MojGrid to nazwa elementu Grid w XAML
+
             }
+
+            
+
         }
     }
 }

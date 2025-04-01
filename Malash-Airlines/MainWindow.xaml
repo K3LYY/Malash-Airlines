@@ -80,7 +80,7 @@
             </Style>
         </Window.Resources>
 
-        <Grid>
+        <Grid Name="windowGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"/>
                 <!-- Górny pasek nawigacyjny -->

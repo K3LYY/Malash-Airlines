@@ -70,7 +70,11 @@ namespace Malash_Airlines {
 
                     // TODO: Open main application window
                     // For now, just close the login window
+                    MainWindow window = new MainWindow();
+                    window.Show();
+
                     this.Close();
+                    
                 } else {
                     MessageBox.Show("Nie znaleziono użytkownika.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
