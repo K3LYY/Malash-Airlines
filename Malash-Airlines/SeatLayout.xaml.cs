@@ -4,26 +4,25 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Malash_Airlines
-{
-    public partial class SeatLayout : Window
-    {
+namespace Malash_Airlines {
+    public partial class SeatLayout : Window {
         private List<Button> allSeats = new List<Button>();
         private Button selectedSeat = null;
+        public string SelectedSeatNumber { get; private set; }
 
-        public SeatLayout()
-        {
+        public SeatLayout() {
             InitializeComponent();
             CreateFirstClassSeats();
             CreateEconomySeats();
         }
 
-        private void CreateFirstClassSeats()
-        {
-            for (int row = 1; row <= 4; row++)
-            {
-                TextBlock rowNumber = new TextBlock
-                {
+        public SeatLayout(string layoutType, List<string> occupiedSeats) : this() {
+            MarkOccupiedSeats(occupiedSeats);
+        }
+
+        private void CreateFirstClassSeats() {
+            for (int row = 1; row <= 4; row++) {
+                TextBlock rowNumber = new TextBlock {
                     Text = row.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
@@ -39,19 +38,15 @@ namespace Malash_Airlines
             }
         }
 
-        private void CreateEconomySeats()
-        {
-            for (int i = 0; i < 26; i++)
-            {
+        private void CreateEconomySeats() {
+            for (int i = 0; i < 26; i++) {
                 EconomyGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(40) });
             }
 
-            for (int row = 5; row <= 30; row++)
-            {
+            for (int row = 5; row <= 30; row++) {
                 int gridRow = row - 4;
 
-                TextBlock rowNumber = new TextBlock
-                {
+                TextBlock rowNumber = new TextBlock {
                     Text = row.ToString(),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
@@ -69,11 +64,9 @@ namespace Malash_Airlines
             }
         }
 
-        private void CreateSeat(Grid parentGrid, int row, int column, string seatNumber, bool isFirstClass)
-        {
-            Button seat = new Button
-            {
-                Content = seatNumber[^1..], // Last character of seatNumber
+        private void CreateSeat(Grid parentGrid, int row, int column, string seatNumber, bool isFirstClass) {
+            Button seat = new Button {
+                Content = seatNumber[^1..],
                 Width = isFirstClass ? 40 : 30,
                 Height = isFirstClass ? 40 : 30,
                 Margin = new Thickness(2),
@@ -90,12 +83,23 @@ namespace Malash_Airlines
             allSeats.Add(seat);
         }
 
-        private void Seat_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button clickedSeat && clickedSeat.Tag is SeatInfo seatInfo)
-            {
-                if (selectedSeat != null)
-                {
+        private void MarkOccupiedSeats(List<string> occupiedSeats) {
+            if (occupiedSeats == null) return;
+
+            foreach (var seat in allSeats) {
+                if (seat.Tag is SeatInfo seatInfo && occupiedSeats.Contains(seatInfo.SeatNumber)) {
+                    seat.Background = Brushes.Gray;
+                    seat.IsEnabled = false;
+                    seat.Content = "X";
+                }
+            }
+        }
+
+        private void Seat_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button clickedSeat && clickedSeat.Tag is SeatInfo seatInfo) {
+                if (!clickedSeat.IsEnabled) return;
+
+                if (selectedSeat != null) {
                     SeatInfo prevSeatInfo = selectedSeat.Tag as SeatInfo;
                     selectedSeat.Background = prevSeatInfo.IsFirstClass ? Brushes.LightBlue : Brushes.LightGreen;
                     selectedSeat.Content = prevSeatInfo.SeatNumber[^1..];
@@ -104,28 +108,25 @@ namespace Malash_Airlines
                 selectedSeat = clickedSeat;
                 selectedSeat.Background = Brushes.Orange;
                 selectedSeat.Content = "✓";
+                SelectedSeatNumber = seatInfo.SeatNumber;
 
                 MessageBox.Show($"Selected seat: {seatInfo.SeatNumber} ({(seatInfo.IsFirstClass ? "First Class" : "Economy")})",
                     "Seat Selection", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedSeat != null && selectedSeat.Tag is SeatInfo seatInfo)
-            {
-                MessageBox.Show($"You have confirmed seat {seatInfo.SeatNumber}.\nClass: {(seatInfo.IsFirstClass ? "First Class" : "Economy")}",
-                    "Confirmation", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e) {
+            if (selectedSeat != null && selectedSeat.Tag is SeatInfo seatInfo) {
+                SelectedSeatNumber = seatInfo.SeatNumber;
+                DialogResult = true;
+                Close();
+            } else {
                 MessageBox.Show("Please select a seat first.", "No Seat Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
 
-    public class SeatInfo
-    {
+    public class SeatInfo {
         public string SeatNumber { get; set; }
         public bool IsFirstClass { get; set; }
     }

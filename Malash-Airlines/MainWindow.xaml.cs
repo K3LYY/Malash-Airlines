@@ -20,8 +20,8 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
-            //WorkerPanel panel = new WorkerPanel();
-            //panel.Show();
+            WorkerPanel panel = new WorkerPanel();
+            panel.Show();
             //SeatLayout layout = new SeatLayout();
             //layout.Show();
             //Database db = new Database();
