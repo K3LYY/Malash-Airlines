@@ -210,7 +210,7 @@
                             </Grid>
 
                             <!-- Reservations List -->
-                            <DataGrid Grid.Row="2" x:Name="ReservationsDataGrid" Margin="0,10">
+                            <DataGrid Grid.Row="2" x:Name="ReservationsDataGrid" Margin="0,10" SelectionChanged="ReservationsDataGrid_SelectionChanged">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding ReservationID}" Width="50" />
                                     <DataGridTextColumn Header="Klient" Binding="{Binding UserName}" Width="*" />

@@ -8,12 +8,19 @@ namespace Malash_Airlines {
     public partial class SeatLayout : Window {
         private List<Button> allSeats = new List<Button>();
         private Button selectedSeat = null;
+        private Boolean allowSelecting  = true;
         public string SelectedSeatNumber { get; private set; }
 
-        public SeatLayout() {
+        public SeatLayout(bool allowSelecting = true) {
             InitializeComponent();
             CreateFirstClassSeats();
             CreateEconomySeats();
+            this.allowSelecting = allowSelecting;
+
+            if (allowSelecting == false) {
+                ConfirmButton.Visibility = Visibility.Hidden;
+            }
+
         }
 
         public SeatLayout(string layoutType, List<string> occupiedSeats) : this() {
@@ -96,6 +103,11 @@ namespace Malash_Airlines {
         }
 
         private void Seat_Click(object sender, RoutedEventArgs e) {
+
+            if (allowSelecting == false) {
+                return;
+            }
+
             if (sender is Button clickedSeat && clickedSeat.Tag is SeatInfo seatInfo) {
                 if (!clickedSeat.IsEnabled) return;
 
@@ -116,6 +128,7 @@ namespace Malash_Airlines {
         }
 
         private void ConfirmButton_Click(object sender, RoutedEventArgs e) {
+
             if (selectedSeat != null && selectedSeat.Tag is SeatInfo seatInfo) {
                 SelectedSeatNumber = seatInfo.SeatNumber;
                 DialogResult = true;

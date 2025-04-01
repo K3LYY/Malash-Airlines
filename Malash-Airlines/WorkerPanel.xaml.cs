@@ -98,6 +98,7 @@ namespace Malash_Airlines {
             try {
                 flights.Clear();
                 foreach (var flight in Database.GetAvailableFlights()) {
+                    flight.FlightDetails = $"{flight.ID}: {flight.Departure} -> {flight.Destination}, {flight.Date:yyyy-MM-dd} {flight.Time}";
                     flights.Add(flight);
                 }
                 FlightComboBox.Items.Refresh();
@@ -151,7 +152,7 @@ namespace Malash_Airlines {
 
         private void SearchUsersButton_Click(object sender, RoutedEventArgs e) {
             string searchEmail = SearchEmailTextBox.Text.Trim().ToLower();
-            if (searchEmail == "wyszukaj po emailu") searchEmail = ""; // Ignoruj placeholder
+            if (searchEmail == "wyszukaj po emailu") searchEmail = "";
             try {
                 users.Clear();
                 var allUsers = Database.GetUsers();
@@ -252,6 +253,20 @@ namespace Malash_Airlines {
             }
         }
 
+        private void ReservationsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (ReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
+                // Auto-select the user in UserComboBox based on the selected reservation
+                var user = users.FirstOrDefault(u => u.ID == selectedReservation.UserID);
+                if (user != null) {
+                    UserComboBox.SelectedItem = user;
+                }
+                // Clear previous flight and seat selections to allow new assignment
+                FlightComboBox.SelectedIndex = -1;
+                SeatNumberTextBox.Text = string.Empty;
+                selectedSeatNumber = null;
+            }
+        }
+
         private void RefreshFlightsButton_Click(object sender, RoutedEventArgs e) {
             LoadFlights();
         }
@@ -309,7 +324,7 @@ namespace Malash_Airlines {
 
         private void ViewSeatsButton_Click(object sender, RoutedEventArgs e) {
             if (FlightsDataGrid.SelectedItem is Flight selectedFlight) {
-                var seatLayoutWindow = new SeatLayout();
+                var seatLayoutWindow = new SeatLayout(false);
                 seatLayoutWindow.Show();
             } else {
                 MessageBox.Show("Please select a flight to view its seat layout.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);

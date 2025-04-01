@@ -36,6 +36,7 @@ namespace Malash_Airlines {
                     using (var reader = command.ExecuteReader()) {
                         while (reader.Read()) {
                             flights.Add(new Flight {
+                                FlightDetails = $"{Convert.ToInt32(reader["ID"])} : {reader["Departure"]} -> {reader["Destination"]} dnia {reader["Date"].ToString().Substring(0, 10)} o {reader["Time"]}",
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Departure = reader["Departure"].ToString(),
                                 Destination = reader["Destination"].ToString(),
@@ -410,6 +411,7 @@ namespace Malash_Airlines {
                         using (var reader = command.ExecuteReader()) {
                             while (reader.Read()) {
                                 flights.Add(new Flight {
+                                    FlightDetails = $"{Convert.ToInt32(reader["ID"])} : {reader["Departure"]} -> {reader["Destination"]} dnia {reader["Date"].ToString().Substring(0, 10)} o {reader["Time"]}",
                                     ID = Convert.ToInt32(reader["ID"]),
                                     Departure = reader["Departure"].ToString(),
                                     Destination = reader["Destination"].ToString(),
@@ -448,6 +450,7 @@ namespace Malash_Airlines {
 
     // Data models
     public class Flight {
+        public string FlightDetails { get; set; }
         public int ID { get; set; }
         public string Departure { get; set; }
         public string Destination { get; set; }
