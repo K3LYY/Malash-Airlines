@@ -151,6 +151,14 @@ namespace Malash_Airlines
                 Margin = new Thickness(0, 0, 0, 25)
             };
 
+            // Button container for multiple buttons
+            StackPanel buttonContainer = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 15, 0, 0)
+            };
+
             // Book now button
             Button bookButton = new Button
             {
@@ -158,10 +166,26 @@ namespace Malash_Airlines
                 FontSize = 16,
                 Width = 180,
                 Height = 45,
-                Margin = new Thickness(0, 15, 0, 0)
+                Margin = new Thickness(5, 0, 5, 0)
             };
 
             bookButton.Click += (s, e) => BookFlight_Click(flight.ID);
+
+            // View Route Map button
+            Button viewMapButton = new Button
+            {
+                Content = "View Route Map",
+                FontSize = 16,
+                Width = 180,
+                Height = 45,
+                Margin = new Thickness(5, 0, 5, 0)
+            };
+
+            viewMapButton.Click += (s, e) => ViewFlightMap_Click(flight);
+
+            // Add buttons to container
+            buttonContainer.Children.Add(bookButton);
+            buttonContainer.Children.Add(viewMapButton);
 
             // Navigation indicator
             TextBlock navIndicator = new TextBlock
@@ -179,7 +203,7 @@ namespace Malash_Airlines
             flightInfo.Children.Add(dateTimeInfo);
             flightInfo.Children.Add(priceInfo);
             flightInfo.Children.Add(aircraftInfo);
-            flightInfo.Children.Add(bookButton);
+            flightInfo.Children.Add(buttonContainer);
             flightInfo.Children.Add(navIndicator);
 
             // Add the stack panel to the container
@@ -249,6 +273,13 @@ namespace Malash_Airlines
             // Uncomment and modify this to implement actual booking
             // SeatLayout seatLayout = new SeatLayout(flightId);
             // seatLayout.ShowDialog();
+        }
+
+        private void ViewFlightMap_Click(Flight flight)
+        {
+            // Open the flight map visualization window
+            FlightMapVisualization mapWindow = new FlightMapVisualization(flight);
+            mapWindow.ShowDialog();
         }
     }
 }
