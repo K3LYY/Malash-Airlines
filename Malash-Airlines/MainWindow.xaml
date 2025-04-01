@@ -114,7 +114,7 @@
                 <Button Grid.Column="4" Content="KAT4" Width="Auto" Margin="5"/>
 
                 <!-- Przycisk Log In -->
-            <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick"/>
+            <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick" Name="loginButton"/>
             </Grid>
 
             <!-- Główna zawartość -->
