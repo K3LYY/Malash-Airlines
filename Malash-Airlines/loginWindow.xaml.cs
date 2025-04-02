@@ -14,6 +14,7 @@ namespace Malash_Airlines {
             // Wire up event handlers
             SendCodeButton.Click += SendCodeButton_Click;
             LoginButton.Click += LoginButton_Click;
+            this.Closing += LoginWindow_Closing;
         }
 
         private void SendCodeButton_Click(object sender, RoutedEventArgs e) {
@@ -87,6 +88,33 @@ namespace Malash_Airlines {
             // Simple temporary password generation 
             // In a real-world scenario, use a more secure method
             return Guid.NewGuid().ToString().Substring(0, 10);
+        }
+
+        private void LoginWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Only handle this if we're not already logging in
+            if (!AppSession.isLoggedIn)
+            {
+                e.Cancel = true; // Cancel the immediate close
+                Dispatcher.BeginInvoke((Action)(() => {
+                    OpenMainWindowAndClose();
+                }));
+            }
+        }
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenMainWindowAndClose();
+        }
+
+        private void OpenMainWindowAndClose()
+        {
+            // Create and show main window
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+
+            // Close this window
+            this.Closing -= LoginWindow_Closing; // Remove the handler to prevent infinite loop
+            this.Close();
         }
     }
 }

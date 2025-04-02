@@ -32,7 +32,18 @@ namespace Malash_Airlines
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
         {
-            if (loginButton.Content.ToString() == "Log In")
+            //if (loginButton.Content.ToString() == "Log In")
+            //{
+            //    loginWindow window = new loginWindow();
+            //    window.Show();
+            //    this.Close();
+            //}
+            //else
+            //{
+            //    Process.Start(Process.GetCurrentProcess().MainModule.FileName);
+            //    Application.Current.Shutdown();
+            //}
+            if (!AppSession.isLoggedIn)
             {
                 loginWindow window = new loginWindow();
                 window.Show();
@@ -40,8 +51,13 @@ namespace Malash_Airlines
             }
             else
             {
-                Process.Start(Process.GetCurrentProcess().MainModule.FileName);
-                Application.Current.Shutdown();
+                // Show the context menu
+                var button = sender as Button;
+                if (button != null)
+                {
+                    //button.ContextMenu.PlacementTarget = button;
+                    //button.ContextMenu.IsOpen = true;
+                }
             }
 
         }
