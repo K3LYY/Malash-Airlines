@@ -372,19 +372,54 @@ namespace Malash_Airlines {
             }
         }
 
-        public static bool RemoveFlight(int flightId) {
-            using (var connection = new MySqlConnection(_connectionString)) {
-                try {
+        public static bool RemoveFlight(int flightId)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
                     connection.Open();
                     string query = "DELETE FROM flights WHERE ID = @FlightID;";
 
-                    using (var command = new MySqlCommand(query, connection)) {
+                    using (var command = new MySqlCommand(query, connection))
+                    {
                         command.Parameters.AddWithValue("@FlightID", flightId);
                         int rowsAffected = command.ExecuteNonQuery();
                         return rowsAffected > 0;
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     throw new ApplicationException("Error removing flight", ex);
+                }
+            }
+        }
+
+        // Add this to your Database.cs
+        public static int GetUserIdByEmail(string email)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string query = "SELECT ID FROM users WHERE Email = @Email;";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Email", email);
+                        var result = command.ExecuteScalar();
+
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return Convert.ToInt32(result);
+                        }
+                        throw new ArgumentException("User not found with the specified email");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Error retrieving user ID", ex);
                 }
             }
         }
@@ -420,6 +455,7 @@ namespace Malash_Airlines {
                             }
                         }
                     }
+                    #
                 } catch (Exception ex) {
                     throw new ApplicationException("Error retrieving reservations", ex);
                 }
