@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Windows;
 using DotNetEnv;
 using MySql.Data.MySqlClient;
 
@@ -15,7 +16,6 @@ namespace Malash_Airlines {
             _connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING is not set in the environment variables.");
         }
 
-        // Existing methods from the original file...
         public static List<Flight> GetAvailableFlights() {
             var flights = new List<Flight>();
 
@@ -24,7 +24,7 @@ namespace Malash_Airlines {
                     connection.Open();
                     string query = @"
                             SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
-                                   F.Date, F.Time, F.Price, P.Name AS Plane
+                                   F.Date, F.Time, F.Price, P.Name AS Plane, F.FlightType
                             FROM flights F
                             JOIN airports A1 ON F.Departure = A1.ID
                             JOIN airports A2 ON F.Destination = A2.ID
@@ -34,6 +34,7 @@ namespace Malash_Airlines {
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader()) {
+                        
                         while (reader.Read()) {
                             flights.Add(new Flight {
                                 FlightDetails = $"{Convert.ToInt32(reader["ID"])} : {reader["Departure"]} -> {reader["Destination"]} dnia {reader["Date"].ToString().Substring(0, 10)} o {reader["Time"]}",
@@ -43,12 +44,13 @@ namespace Malash_Airlines {
                                 Date = Convert.ToDateTime(reader["Date"]),
                                 Time = reader["Time"].ToString(),
                                 Price = Convert.ToDecimal(reader["Price"]),
-                                Plane = reader["Plane"].ToString()
+                                Plane = reader["Plane"].ToString(),
+                                FlightType = reader["FlightType"].ToString()
                             });
                         }
                     }
                 } catch (Exception ex) {
-                    throw new ApplicationException("Error retrieving available flights", ex);
+                    throw new ApplicationException("Error retrieving available flights: "+ex.Message, ex);
                 }
             }
 
@@ -61,7 +63,7 @@ namespace Malash_Airlines {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
-                    string query = "SELECT ID, Name, Location FROM airports ORDER BY Location;";
+                    string query = "SELECT ID, Name, Location, GatesCount FROM airports ORDER BY Location;";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader()) {
@@ -69,7 +71,8 @@ namespace Malash_Airlines {
                             airports.Add(new Airport {
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Name = reader["Name"].ToString(),
-                                Location = reader["Location"].ToString()
+                                Location = reader["Location"].ToString(),
+                                GatesCount = Convert.ToInt32(reader["GatesCount"])
                             });
                         }
                     }
@@ -108,7 +111,7 @@ namespace Malash_Airlines {
         }
 
         public static int AddNewFlight(int departureId, int destinationId, DateTime flightDate,
-                                 string time, decimal price, int planeId) {
+                                 string time, decimal price, int planeId, string FlightType = "public") {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -133,8 +136,8 @@ namespace Malash_Airlines {
 
                     // Insert new flight
                     string query = @"
-                        INSERT INTO flights (Departure, Destination, Date, Time, Price, PlaneID)
-                        VALUES (@Departure, @Destination, @Date, @Time, @Price, @PlaneID);
+                        INSERT INTO flights (Departure, Destination, Date, Time, Price, PlaneID, FlightType)
+                        VALUES (@Departure, @Destination, @Date, @Time, @Price, @PlaneID, @FlightType);
                         SELECT LAST_INSERT_ID();";
 
                     using (var command = new MySqlCommand(query, connection)) {
@@ -144,6 +147,7 @@ namespace Malash_Airlines {
                         command.Parameters.AddWithValue("@Time", time);
                         command.Parameters.AddWithValue("@Price", price);
                         command.Parameters.AddWithValue("@PlaneID", planeId);
+                        command.Parameters.AddWithValue("@FlightType", FlightType);
 
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
@@ -168,6 +172,17 @@ namespace Malash_Airlines {
                             throw new ArgumentException("User does not exist");
                         }
                     }
+                    
+                    // Sprawdź, czy lot nie jest prywatny
+                    string checkFlightTypeQuery = "SELECT FlightType FROM flights WHERE ID = @FlightID";
+                    using (var checkFlightTypeCommand = new MySqlCommand(checkFlightTypeQuery, connection)) {
+                        checkFlightTypeCommand.Parameters.AddWithValue("@FlightID", flightId);
+                        var flightType = checkFlightTypeCommand.ExecuteScalar()?.ToString();
+                        
+                        if (flightType?.ToLower() == "private") {
+                            throw new ArgumentException("Cannot reserve seats on private flights");
+                        }
+                    }
 
                     // Insert reservation
                     string query = @"
@@ -188,14 +203,70 @@ namespace Malash_Airlines {
             }
         }
 
-        // New methods from the previous addition...
+        public static int AddReservation(int userId, int flightId, string seatNumber, decimal price) {
+            try {
+                using (var connection = new MySqlConnection(_connectionString)) {
+                    connection.Open();
+                    
+                    // Sprawdzamy, czy rezerwacja typu "FULL" już istnieje dla tego lotu
+                    if (seatNumber == "FULL") {
+                        // Sprawdzamy, czy lot jest już zarezerwowany
+                        string checkQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID";
+                        using (var checkCommand = new MySqlCommand(checkQuery, connection)) {
+                            checkCommand.Parameters.AddWithValue("@FlightID", flightId);
+                            int existingReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
+                            if (existingReservations > 0) {
+                                return -1; // Lot jest już częściowo zarezerwowany
+                            }
+                        }
+                    }
+                    // Jeśli to nie jest "FULL" rezerwacja, sprawdzamy czy miejsce jest dostępne
+                    else if (seatNumber != "FULL") {
+                        string checkQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = @SeatNumber";
+                        using (var checkCommand = new MySqlCommand(checkQuery, connection)) {
+                            checkCommand.Parameters.AddWithValue("@FlightID", flightId);
+                            checkCommand.Parameters.AddWithValue("@SeatNumber", seatNumber);
+                            int existingReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
+                            if (existingReservations > 0) {
+                                return -1; // Miejsce jest już zajęte
+                            }
+                        }
+                        
+                        // Sprawdzamy czy dla tego lotu nie ma rezerwacji "FULL"
+                        string checkFullQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = 'FULL'";
+                        using (var checkCommand = new MySqlCommand(checkFullQuery, connection)) {
+                            checkCommand.Parameters.AddWithValue("@FlightID", flightId);
+                            int existingFullReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
+                            if (existingFullReservations > 0) {
+                                return -1; // Cały samolot jest już zarezerwowany
+                            }
+                        }
+                    }
+                    
+                    string query = "INSERT INTO reservations (UserID, FlightID, SeatNumber, Status) " +
+                        "VALUES (@UserID, @FlightID, @SeatNumber, 'confirmed'); SELECT LAST_INSERT_ID()";
+                    
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@UserID", userId);
+                        command.Parameters.AddWithValue("@FlightID", flightId);
+                        command.Parameters.AddWithValue("@SeatNumber", seatNumber);
+                        
+                        return Convert.ToInt32(command.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex) {
+                throw new ApplicationException($"Error adding reservation: {ex.Message}", ex);
+            }
+        }
+
         public static List<User> GetUsers() {
             var users = new List<User>();
 
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
-                    string query = "SELECT ID, Name, Email, Role FROM users;";
+                    string query = "SELECT ID, Name, Email, Role, CustomerType FROM users;";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader()) {
@@ -204,7 +275,8 @@ namespace Malash_Airlines {
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Name = reader["Name"].ToString(),
                                 Email = reader["Email"].ToString(),
-                                Role = reader["Role"].ToString()
+                                Role = reader["Role"].ToString(),
+                                CustomerType = reader["CustomerType"].ToString()
                             });
                         }
                     }
@@ -282,8 +354,8 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
                     string query = @"
-                        INSERT INTO airports (Name, Location)
-                        VALUES (@Name, @Location);
+                        INSERT INTO airports (Name, Location, GatesCount)
+                        VALUES (@Name, @Location, 5);
                         SELECT LAST_INSERT_ID();";
 
                     using (var command = new MySqlCommand(query, connection)) {
@@ -399,7 +471,7 @@ namespace Malash_Airlines {
                     connection.Open();
                     string query = @"
                 SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
-                       F.Date, F.Time, F.Price, P.Name AS Plane
+                       F.Date, F.Time, F.Price, P.Name AS Plane, F.FlightType
                 FROM flights F
                 JOIN airports A1 ON F.Departure = A1.ID
                 JOIN airports A2 ON F.Destination = A2.ID
@@ -418,7 +490,8 @@ namespace Malash_Airlines {
                                     Date = Convert.ToDateTime(reader["Date"]),
                                     Time = reader["Time"].ToString(),
                                     Price = Convert.ToDecimal(reader["Price"]),
-                                    Plane = reader["Plane"].ToString()
+                                    Plane = reader["Plane"].ToString(),
+                                    FlightType = reader["FlightType"].ToString()
                                 });
                             }
                         }
@@ -446,9 +519,79 @@ namespace Malash_Airlines {
                 }
             }
         }
+
+        public static bool UpdateUserCustomerType(int userId, string newCustomerType) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = "UPDATE users SET CustomerType = @CustomerType WHERE ID = @UserID;";
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@CustomerType", newCustomerType);
+                        command.Parameters.AddWithValue("@UserID", userId);
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                } catch (Exception ex) {
+                    string innerErrorMessage = ex.InnerException != null ? ex.InnerException.Message : "No inner exception";
+                    throw new ApplicationException($"Error updating user customer type: {ex.Message}. Inner error: {innerErrorMessage}", ex);
+                }
+            }
+        }
+        
+        public static string GetUserCustomerType(int userId) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = "SELECT CustomerType FROM users WHERE ID = @UserID;";
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@UserID", userId);
+                        var result = command.ExecuteScalar();
+                        return result != null ? result.ToString() : "";
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException("Error getting user customer type", ex);
+                }
+            }
+        }
+
+        public static Flight GetFlightById(int flightId) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = @"
+                        SELECT f.ID, a1.Name as Departure, a2.Name as Destination, 
+                               f.Date, f.Time, f.Price, p.Name as Plane, f.FlightType
+                        FROM flights f
+                        JOIN airports a1 ON f.Departure = a1.ID
+                        JOIN airports a2 ON f.Destination = a2.ID
+                        JOIN planes p ON f.PlaneID = p.ID
+                        WHERE f.ID = @FlightID;";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@FlightID", flightId);
+                        using (var reader = command.ExecuteReader()) {
+                            if (reader.Read()) {
+                                return new Flight {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    Departure = reader["Departure"].ToString(),
+                                    Destination = reader["Destination"].ToString(),
+                                    Date = Convert.ToDateTime(reader["Date"]),
+                                    Time = reader["Time"].ToString(),
+                                    Price = Convert.ToDecimal(reader["Price"]),
+                                    Plane = reader["Plane"].ToString(),
+                                    FlightType = reader["FlightType"].ToString()
+                                };
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Error retrieving flight with ID {flightId}: {ex.Message}", ex);
+                }
+            }
+            return null;
+        }
     }
 
-    // Data models
     public class Flight {
         public string FlightDetails { get; set; }
         public int ID { get; set; }
@@ -458,12 +601,14 @@ namespace Malash_Airlines {
         public string Time { get; set; }
         public decimal Price { get; set; }
         public string Plane { get; set; }
+        public string FlightType { get; set; }
     }
 
     public class Airport {
         public int ID { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
+        public int GatesCount { get; set; }
     }
 
     public class Plane {
@@ -472,12 +617,12 @@ namespace Malash_Airlines {
         public string SeatsLayout { get; set; }
     }
 
-    // New Data Models
     public class User {
         public int ID { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
+        public string CustomerType { get; set; }
     }
 
     public class Reservation {

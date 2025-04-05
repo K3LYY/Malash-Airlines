@@ -23,6 +23,8 @@ namespace Malash_Airlines {
             LoadAllData();
         }
 
+        private ObservableCollection<User> businessClients;
+
         private void InitializeCollections() {
             users = new ObservableCollection<User>();
             reservations = new ObservableCollection<ReservationViewModel>();
@@ -30,6 +32,7 @@ namespace Malash_Airlines {
             airports = new ObservableCollection<Airport>();
             planes = new ObservableCollection<PlaneViewModel>();
             airportFlights = new ObservableCollection<Flight>();
+            businessClients = new ObservableCollection<User>(); // Nowa kolekcja
 
             UsersDataGrid.ItemsSource = users;
             ReservationsDataGrid.ItemsSource = reservations;
@@ -37,12 +40,20 @@ namespace Malash_Airlines {
             AirportsDataGrid.ItemsSource = airports;
             PlanesDataGrid.ItemsSource = planes;
             AirportFlightsDataGrid.ItemsSource = airportFlights;
+            BusinessClientsDataGrid.ItemsSource = businessClients; // Przypisanie źródła danych
 
             UserComboBox.ItemsSource = users;
             FlightComboBox.ItemsSource = flights;
             DepartureComboBox.ItemsSource = airports;
             DestinationComboBox.ItemsSource = airports;
             PlaneComboBox.ItemsSource = planes;
+            BusinessDepartureComboBox.ItemsSource = airports;
+            BusinessDestinationComboBox.ItemsSource = airports;
+            BusinessClientComboBox.ItemsSource = businessClients; // Nowe źródło danych
+            FullPlaneDepartureComboBox.ItemsSource = airports; // Nowe źródło danych
+            FullPlaneDestinationComboBox.ItemsSource = airports; // Nowe źródło danych
+            FullPlanePlaneComboBox.ItemsSource = planes; // Nowe źródło danych
+
         }
 
         private void LoadAllData() {
@@ -51,6 +62,7 @@ namespace Malash_Airlines {
             LoadUsers();
             LoadFlights();
             LoadReservations();
+            LoadBusinessClients(); // Dodanie ładowania klientów biznesowych
         }
 
         // --- Data Loading Methods ---
@@ -63,6 +75,20 @@ namespace Malash_Airlines {
                 }
             } catch (Exception ex) {
                 MessageBox.Show($"Error loading users: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoadBusinessClients() {
+            try {
+                businessClients.Clear();
+                var allUsers = Database.GetUsers();
+                foreach (var user in allUsers) {
+                    if (user.CustomerType.ToLower() == "business") {
+                        businessClients.Add(user);
+                    }
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error loading business clients: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -101,6 +127,10 @@ namespace Malash_Airlines {
                     flight.FlightDetails = $"{flight.ID}: {flight.Departure} -> {flight.Destination}, {flight.Date:yyyy-MM-dd} {flight.Time}";
                     flights.Add(flight);
                 }
+                
+                // Odfiltrowanie prywatnych lotów dla ComboBox rezerwacji
+                var publicFlights = flights.Where(f => f.FlightType.ToLower() == "public").ToList();
+                FlightComboBox.ItemsSource = publicFlights;
                 FlightComboBox.Items.Refresh();
             } catch (Exception ex) {
                 MessageBox.Show($"Error loading flights: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -146,6 +176,78 @@ namespace Malash_Airlines {
 
         // --- Event Handlers ---
 
+        private void RefreshBusinessClientsButton_Click(object sender, RoutedEventArgs e) {
+            LoadBusinessClients();
+        }
+
+        private void OrderFullPlaneButton_Click(object sender, RoutedEventArgs e) {
+            // Sprawdzam podstawowe pola bez ceny
+            if (BusinessClientComboBox.SelectedItem == null || FullPlaneDepartureComboBox.SelectedItem == null ||
+                FullPlaneDestinationComboBox.SelectedItem == null || !FullPlaneDatePicker.SelectedDate.HasValue ||
+                string.IsNullOrWhiteSpace(FullPlaneTimeComboBox.Text) || FullPlanePlaneComboBox.SelectedItem == null) {
+                MessageBox.Show("Please fill all fields correctly.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Sprawdzam pole ceny osobno, używając domyślnej wartości jeśli nie podano
+            decimal price = 10000m; // Domyślna cena
+            // Próbuję odczytać cenę z pola tekstowego, jeśli istnieje
+            if (FullPlanePriceTextBox != null && !string.IsNullOrWhiteSpace(FullPlanePriceTextBox.Text)) {
+                if (!decimal.TryParse(FullPlanePriceTextBox.Text, out price)) {
+                    MessageBox.Show("Price must be a valid number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
+            try {
+                int userId = ((User)BusinessClientComboBox.SelectedItem).ID;
+                int departureId = ((Airport)FullPlaneDepartureComboBox.SelectedItem).ID;
+                int destinationId = ((Airport)FullPlaneDestinationComboBox.SelectedItem).ID;
+                DateTime flightDate = FullPlaneDatePicker.SelectedDate.Value;
+                string flightTime = FullPlaneTimeComboBox.Text;
+                int planeId = ((PlaneViewModel)FullPlanePlaneComboBox.SelectedItem).ID;
+
+                int flightId = Database.AddNewFlight(departureId, destinationId, flightDate, flightTime, price, planeId, "private");
+                if (flightId > 0) {
+                    string seatNumber = "FULL"; // Oznaczamy jako wynajęcie całego samolotu
+
+                    int reservationId = Database.AddReservation(userId, flightId, seatNumber, price);
+
+                    if (reservationId > 0) {
+                        try {
+                            User client = (User)BusinessClientComboBox.SelectedItem;
+                            mail_functions.SendBookingConfirmation(client.Email, "");
+                        } catch (Exception ex) {
+                            MessageBox.Show($"Error sending confirmation email: {ex.Message}", "Email Error",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+
+                        MessageBox.Show($"Full plane ordered successfully for {((User)BusinessClientComboBox.SelectedItem).Name}! Flight ID: {flightId}, Reservation ID: {reservationId}",
+                            "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadFlights();
+                        LoadReservations();
+                        LoadBusinessClients();
+                        BusinessClientComboBox.SelectedIndex = -1;
+                        FullPlaneDepartureComboBox.SelectedIndex = -1;
+                        FullPlaneDestinationComboBox.SelectedIndex = -1;
+                        FullPlaneDatePicker.SelectedDate = null;
+                        FullPlaneTimeComboBox.Text = string.Empty;
+                        FullPlanePlaneComboBox.SelectedIndex = -1;
+                        if (FullPlanePriceTextBox != null) {
+                            FullPlanePriceTextBox.Text = string.Empty;
+                        }
+                    } else {
+                        MessageBox.Show("Failed to create reservation for the flight.", "Database Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                } else {
+                    MessageBox.Show("Failed to order full plane.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error ordering full plane: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void RefreshUsersButton_Click(object sender, RoutedEventArgs e) {
             LoadUsers();
         }
@@ -186,6 +288,12 @@ namespace Malash_Airlines {
 
         private void SelectSeatButton_Click(object sender, RoutedEventArgs e) {
             if (FlightComboBox.SelectedItem is Flight selectedFlight) {
+                // Dodatkowe sprawdzenie typu lotu
+                if (selectedFlight.FlightType.ToLower() != "public") {
+                    MessageBox.Show("Cannot select seats for private flights.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                
                 try {
                     var occupiedSeats = Database.GetOccupiedSeatsForFlight(selectedFlight.ID);
                     var plane = Database.GetPlanes().FirstOrDefault(p => p.Name == selectedFlight.Plane);
@@ -213,6 +321,14 @@ namespace Malash_Airlines {
             try {
                 int userId = ((User)UserComboBox.SelectedItem).ID;
                 int flightId = ((Flight)FlightComboBox.SelectedItem).ID;
+                
+                // Sprawdzenie, czy lot nie jest prywatny
+                var selectedFlight = FlightComboBox.SelectedItem as Flight;
+                if (selectedFlight != null && selectedFlight.FlightType.ToLower() != "public") {
+                    MessageBox.Show("Cannot make reservations for private flights.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                
                 bool success = Database.ReserveSeat(userId, flightId, selectedSeatNumber);
 
                 if (success) {
@@ -255,12 +371,10 @@ namespace Malash_Airlines {
 
         private void ReservationsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (ReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
-                // Auto-select the user in UserComboBox based on the selected reservation
                 var user = users.FirstOrDefault(u => u.ID == selectedReservation.UserID);
                 if (user != null) {
                     UserComboBox.SelectedItem = user;
                 }
-                // Clear previous flight and seat selections to allow new assignment
                 FlightComboBox.SelectedIndex = -1;
                 SeatNumberTextBox.Text = string.Empty;
                 selectedSeatNumber = null;
@@ -444,6 +558,107 @@ namespace Malash_Airlines {
                 }
             } else {
                 MessageBox.Show("Please select a plane to remove.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void UserComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (UserComboBox.SelectedItem is User selectedUser) {
+                bool isBusiness = selectedUser.Role.ToLower() == "business";
+                BusinessDepartureLabel.Visibility = isBusiness ? Visibility.Visible : Visibility.Collapsed;
+                BusinessDepartureComboBox.Visibility = isBusiness ? Visibility.Visible : Visibility.Collapsed;
+                BusinessDestinationLabel.Visibility = isBusiness ? Visibility.Visible : Visibility.Collapsed;
+                BusinessDestinationComboBox.Visibility = isBusiness ? Visibility.Visible : Visibility.Collapsed;
+                OrderBusinessFlightButton.Visibility = isBusiness ? Visibility.Visible : Visibility.Collapsed;
+
+                FlightComboBox.Visibility = isBusiness ? Visibility.Collapsed : Visibility.Visible;
+                SeatNumberTextBox.Visibility = isBusiness ? Visibility.Collapsed : Visibility.Visible;
+                SelectSeatButton.Visibility = isBusiness ? Visibility.Collapsed : Visibility.Visible;
+                AddReservationButton.Visibility = isBusiness ? Visibility.Collapsed : Visibility.Visible;
+
+                if (isBusiness) {
+                    BusinessDepartureComboBox.ItemsSource = airports;
+                    BusinessDestinationComboBox.ItemsSource = airports;
+                }
+            } else {
+                BusinessDepartureLabel.Visibility = Visibility.Collapsed;
+                BusinessDepartureComboBox.Visibility = Visibility.Collapsed;
+                BusinessDestinationLabel.Visibility = Visibility.Collapsed;
+                BusinessDestinationComboBox.Visibility = Visibility.Collapsed;
+                OrderBusinessFlightButton.Visibility = Visibility.Collapsed;
+
+                FlightComboBox.Visibility = Visibility.Visible;
+                SeatNumberTextBox.Visibility = Visibility.Visible;
+                SelectSeatButton.Visibility = Visibility.Visible;
+                AddReservationButton.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void UpgradeToBusinessButton_Click(object sender, RoutedEventArgs e) {
+            if (UsersDataGrid.SelectedItem is User selectedUser) {
+                string currentCustomerType = Database.GetUserCustomerType(selectedUser.ID);
+                string newCustomerType;
+
+                if (currentCustomerType.ToLower() == "business") {
+                    newCustomerType = "normal";
+                } else {
+                    newCustomerType = "business";
+                }
+
+                string actionText = newCustomerType == "business" ? "upgrade" : "downgrade";
+
+                var confirm = MessageBox.Show($"Are you sure you want to {actionText} {selectedUser.Name} to {newCustomerType} customer type?",
+                    $"Confirm {actionText}", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (confirm == MessageBoxResult.Yes) {
+                    try {
+                        bool success = Database.UpdateUserCustomerType(selectedUser.ID, newCustomerType);
+                        if (success) {
+                            MessageBox.Show($"User {actionText}d to {newCustomerType} successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadUsers();
+                        } else {
+                            MessageBox.Show($"Failed to {actionText} user.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    } catch (Exception ex) {
+                        MessageBox.Show($"Error updating user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            } else {
+                MessageBox.Show("Please select a user.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void OrderBusinessFlightButton_Click(object sender, RoutedEventArgs e) {
+            if (UserComboBox.SelectedItem == null || BusinessDepartureComboBox.SelectedItem == null || BusinessDestinationComboBox.SelectedItem == null) {
+                MessageBox.Show("Please select a user, departure airport, and destination airport.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try {
+                int userId = ((User)UserComboBox.SelectedItem).ID;
+                int departureId = ((Airport)BusinessDepartureComboBox.SelectedItem).ID;
+                int destinationId = ((Airport)BusinessDestinationComboBox.SelectedItem).ID;
+
+                var availablePlanes = Database.GetPlanes();
+                if (!availablePlanes.Any()) {
+                    MessageBox.Show("No planes available to order a flight.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                int planeId = availablePlanes.First().ID;
+                DateTime flightDate = DateTime.Now.AddDays(1);
+                string flightTime = "12:00";
+                decimal price = 10000m;
+
+                int flightId = Database.AddNewFlight(departureId, destinationId, flightDate, flightTime, price, planeId);
+                if (flightId > 0) {
+                    MessageBox.Show($"Flight ordered successfully for {((User)UserComboBox.SelectedItem).Name}! Flight ID: {flightId}",
+                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadFlights();
+                    UserComboBox.SelectedIndex = -1;
+                } else {
+                    MessageBox.Show("Failed to order flight.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error ordering flight: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

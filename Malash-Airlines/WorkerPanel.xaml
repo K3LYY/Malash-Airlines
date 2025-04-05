@@ -146,7 +146,7 @@
                             <TextBlock Text="Zarządzanie Klientami" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10" />
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
                                 <TextBox x:Name="SearchEmailTextBox" Width="200" Text="Wyszukaj po emailu" Foreground="Gray" 
-                                         GotFocus="SearchEmailTextBox_GotFocus" LostFocus="SearchEmailTextBox_LostFocus" />
+                             GotFocus="SearchEmailTextBox_GotFocus" LostFocus="SearchEmailTextBox_LostFocus" />
                                 <Button Content="Szukaj" x:Name="SearchUsersButton" Width="100" Margin="10,0,0,0" Click="SearchUsersButton_Click" />
                             </StackPanel>
 
@@ -156,11 +156,13 @@
                                     <DataGridTextColumn Header="Imię i Nazwisko" Binding="{Binding Name}" Width="*" />
                                     <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*" />
                                     <DataGridTextColumn Header="Rola" Binding="{Binding Role}" Width="100" />
+                                    <DataGridTextColumn Header="Typ" Binding="{Binding CustomerType}" Width="100" />
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <StackPanel Grid.Row="3">
-                                <Button Content="Odśwież" x:Name="RefreshUsersButton" HorizontalAlignment="Left" Click="RefreshUsersButton_Click" />
+                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                <Button Content="Odśwież" x:Name="RefreshUsersButton" Click="RefreshUsersButton_Click" />
+                                <Button Content="Zmien typ" x:Name="UpgradeToBusinessButton" Margin="10,0,0,0" Click="UpgradeToBusinessButton_Click" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -177,7 +179,7 @@
 
                             <TextBlock Text="Rezerwacje" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10" />
 
-                            <!-- Add Reservation -->
+                            <!-- Add Reservation or Order Flight -->
                             <Grid Grid.Row="1" Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -188,11 +190,15 @@
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Klient:" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="UserComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" />
+                                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="UserComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" SelectionChanged="UserComboBox_SelectionChanged" />
 
+                                <!-- Standard Reservation -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Lot:" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <ComboBox Grid.Row="1" Grid.Column="1" x:Name="FlightComboBox" DisplayMemberPath="FlightDetails" SelectedValuePath="ID" />
 
@@ -207,6 +213,15 @@
                                 </Grid>
 
                                 <Button Grid.Row="3" Grid.Column="1" Content="Dodaj Rezerwację" x:Name="AddReservationButton" HorizontalAlignment="Left" Click="AddReservationButton_Click" />
+
+                                <!-- Business Flight Order -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Lotnisko wylotu:" Margin="0,0,10,0" VerticalAlignment="Center" Visibility="Collapsed" x:Name="BusinessDepartureLabel" />
+                                <ComboBox Grid.Row="4" Grid.Column="1" x:Name="BusinessDepartureComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" Visibility="Collapsed" />
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Lotnisko przylotu:" Margin="0,0,10,0" VerticalAlignment="Center" Visibility="Collapsed" x:Name="BusinessDestinationLabel" />
+                                <ComboBox Grid.Row="5" Grid.Column="1" x:Name="BusinessDestinationComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" Visibility="Collapsed" />
+
+                                <Button Grid.Row="6" Grid.Column="1" Content="Zleć Lot (Business)" x:Name="OrderBusinessFlightButton" HorizontalAlignment="Left" Visibility="Collapsed" Click="OrderBusinessFlightButton_Click" />
                             </Grid>
 
                             <!-- Reservations List -->
@@ -257,6 +272,7 @@
                                     <DataGridTextColumn Header="Czas" Binding="{Binding Time}" Width="80" />
                                     <DataGridTextColumn Header="Cena" Binding="{Binding Price, StringFormat={}{0:C}}" Width="100" />
                                     <DataGridTextColumn Header="Samolot" Binding="{Binding Plane}" Width="120" />
+                                    <DataGridTextColumn Header="Type" Binding="{Binding FlightType}" Width="*" />
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -483,6 +499,101 @@
 
                                 <Button Grid.Row="2" Grid.Column="1" Content="Dodaj Samolot" x:Name="AddPlaneButton" HorizontalAlignment="Left" Margin="0,10,0,0" Click="AddPlaneButton_Click" />
                             </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- BUSINESS CLIENTS TAB -->
+            <TabItem Header="Klienci Biznesowi">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Business Clients List -->
+                    <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Lista Klientów Biznesowych" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10" />
+
+                            <DataGrid Grid.Row="1" x:Name="BusinessClientsDataGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding ID}" Width="50" />
+                                    <DataGridTextColumn Header="Imię i Nazwisko" Binding="{Binding Name}" Width="*" />
+                                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*" />
+                                    <DataGridTextColumn Header="Typ" Binding="{Binding CustomerType}" Width="100" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button Grid.Row="2" Content="Odśwież" x:Name="RefreshBusinessClientsButton" Click="RefreshBusinessClientsButton_Click" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Order Full Plane -->
+                    <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Zleć Wynajem Samolotu" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10" />
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Klient:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="BusinessClientComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Lotnisko wylotu:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="FullPlaneDepartureComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Lotnisko przylotu:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="2" Grid.Column="1" x:Name="FullPlaneDestinationComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" />
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Data:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <DatePicker Grid.Row="3" Grid.Column="1" x:Name="FullPlaneDatePicker" />
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Czas:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="4" Grid.Column="1" x:Name="FullPlaneTimeComboBox" IsEditable="True">
+                                    <ComboBoxItem Content="08:00" />
+                                    <ComboBoxItem Content="10:00" />
+                                    <ComboBoxItem Content="12:00" />
+                                    <ComboBoxItem Content="14:00" />
+                                    <ComboBoxItem Content="16:00" />
+                                    <ComboBoxItem Content="18:00" />
+                                    <ComboBoxItem Content="20:00" />
+                                    <ComboBoxItem Content="22:00" />
+                                </ComboBox>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Samolot:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="5" Grid.Column="1" x:Name="FullPlanePlaneComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" />
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Cena:" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBox Grid.Row="6" Grid.Column="1" x:Name="FullPlanePriceTextBox" />
+                            </Grid>
+
+                            <Button Grid.Row="2" Content="Zleć Wynajem" x:Name="OrderFullPlaneButton" HorizontalAlignment="Left" Click="OrderFullPlaneButton_Click" />
                         </Grid>
                     </Border>
                 </Grid>
