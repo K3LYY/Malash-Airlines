@@ -84,30 +84,88 @@ namespace Malash_Airlines {
             return airports;
         }
 
-        public static List<Plane> GetPlanes() {
+        public static List<Plane> GetPlanes()
+        {
             var planes = new List<Plane>();
 
-            using (var connection = new MySqlConnection(_connectionString)) {
-                try {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
                     connection.Open();
                     string query = "SELECT ID, Name, SeatsLayout FROM planes ORDER BY ID;";
 
                     using (var command = new MySqlCommand(query, connection))
-                    using (var reader = command.ExecuteReader()) {
-                        while (reader.Read()) {
-                            planes.Add(new Plane {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            planes.Add(new Plane
+                            {
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Name = reader["Name"].ToString(),
                                 SeatsLayout = reader["SeatsLayout"].ToString()
                             });
                         }
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     throw new ApplicationException("Error retrieving planes", ex);
                 }
             }
 
             return planes;
+        }
+
+        public static List<Flight> GetSoonestFlights(int limit = 5)
+        {
+            var flights = new List<Flight>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string query = @"
+                    SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
+                           F.Date, F.Time, F.Price, P.Name AS Plane
+                    FROM flights F
+                    JOIN airports A1 ON F.Departure = A1.ID
+                    JOIN airports A2 ON F.Destination = A2.ID
+                    JOIN planes P ON F.PlaneID = P.ID
+                    WHERE F.Date >= CURDATE() OR (F.Date = CURDATE() AND F.Time >= CURTIME())
+                    ORDER BY F.Date, F.Time
+                    LIMIT @Limit;";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Limit", limit);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                flights.Add(new Flight
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    Departure = reader["Departure"].ToString(),
+                                    Destination = reader["Destination"].ToString(),
+                                    Date = Convert.ToDateTime(reader["Date"]),
+                                    Time = reader["Time"].ToString(),
+                                    Price = Convert.ToDecimal(reader["Price"]),
+                                    Plane = reader["Plane"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Error retrieving soonest flights", ex);
+                }
+            }
+
+            return flights;
         }
 
         public static int AddNewFlight(int departureId, int destinationId, DateTime flightDate,

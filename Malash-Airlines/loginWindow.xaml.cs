@@ -62,12 +62,19 @@ namespace Malash_Airlines {
                 var user = Database.GetUsers().FirstOrDefault(u => u.Email == email);
 
                 if (user != null) {
+
+                    AppSession.eMail = user.Email;
+                    AppSession.isLoggedIn = true;
                     // Successful login
-                    MessageBox.Show($"Witaj, {user.Name}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Witaj, {AppSession.eMail}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // TODO: Open main application window
                     // For now, just close the login window
+                    MainWindow window = new MainWindow();
+                    window.Show();
+
                     this.Close();
+                    
                 } else {
                     MessageBox.Show("Nie znaleziono użytkownika.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
