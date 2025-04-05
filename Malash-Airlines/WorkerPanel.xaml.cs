@@ -14,6 +14,7 @@ namespace Malash_Airlines {
         private ObservableCollection<Airport> airports;
         private ObservableCollection<PlaneViewModel> planes;
         private ObservableCollection<Flight> airportFlights;
+        private ObservableCollection<ReservationViewModel> pendingReservations;
 
         private string selectedSeatNumber;
 
@@ -33,6 +34,8 @@ namespace Malash_Airlines {
             planes = new ObservableCollection<PlaneViewModel>();
             airportFlights = new ObservableCollection<Flight>();
             businessClients = new ObservableCollection<User>(); // Nowa kolekcja
+            pendingReservations = new ObservableCollection<ReservationViewModel>();
+            PendingReservationsDataGrid.ItemsSource = pendingReservations;
 
             UsersDataGrid.ItemsSource = users;
             ReservationsDataGrid.ItemsSource = reservations;
@@ -63,6 +66,8 @@ namespace Malash_Airlines {
             LoadFlights();
             LoadReservations();
             LoadBusinessClients(); // Dodanie ładowania klientów biznesowych
+            LoadPendingReservations();
+            LoadRoleUsers();
         }
 
         // --- Data Loading Methods ---
@@ -117,6 +122,18 @@ namespace Malash_Airlines {
                 }
             } catch (Exception ex) {
                 MessageBox.Show($"Error loading reservations: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoadPendingReservations() {
+            try {
+                pendingReservations.Clear();
+                var unconfirmedList = Database.GetUnconfirmedReservations();
+                foreach (var res in unconfirmedList) {
+                    pendingReservations.Add(res);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Error loading pending reservations: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -178,6 +195,116 @@ namespace Malash_Airlines {
 
         private void RefreshBusinessClientsButton_Click(object sender, RoutedEventArgs e) {
             LoadBusinessClients();
+        }
+
+        private void RoleSearchEmailTextBox_GotFocus(object sender, RoutedEventArgs e) {
+            if (RoleSearchEmailTextBox.Text == "Wyszukaj po emailu") {
+                RoleSearchEmailTextBox.Text = "";
+                RoleSearchEmailTextBox.Foreground = Brushes.Black;
+            }
+        }
+
+        private void RoleSearchEmailTextBox_LostFocus(object sender, RoutedEventArgs e) {
+            if (string.IsNullOrWhiteSpace(RoleSearchEmailTextBox.Text)) {
+                RoleSearchEmailTextBox.Text = "Wyszukaj po emailu";
+                RoleSearchEmailTextBox.Foreground = Brushes.Gray;
+            }
+        }
+
+        private void RoleSearchUsersButton_Click(object sender, RoutedEventArgs e) {
+            string searchEmail = RoleSearchEmailTextBox.Text.Trim().ToLower();
+            if (searchEmail == "wyszukaj po emailu") searchEmail = "";
+            try {
+                LoadRoleUsers(searchEmail);
+            } catch (Exception ex) {
+                MessageBox.Show($"Błąd wyszukiwania użytkowników: {ex.Message}", "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RefreshRoleUsersButton_Click(object sender, RoutedEventArgs e) {
+            LoadRoleUsers();
+        }
+
+        private void RoleUsersDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (RoleUsersDataGrid.SelectedItem is User selectedUser) {
+                SelectedUserTextBox.Text = $"{selectedUser.Name} ({selectedUser.Email})";
+                CurrentRoleTextBox.Text = selectedUser.Role;
+                NewRoleComboBox.SelectedItem = NewRoleComboBox.Items.Cast<ComboBoxItem>()
+                    .FirstOrDefault(item => item.Content.ToString() == selectedUser.Role);
+            } else {
+                SelectedUserTextBox.Text = string.Empty;
+                CurrentRoleTextBox.Text = string.Empty;
+                NewRoleComboBox.SelectedIndex = -1;
+            }
+        }
+
+        private void ChangeRoleButton_Click(object sender, RoutedEventArgs e) {
+            if (RoleUsersDataGrid.SelectedItem is User selectedUser && NewRoleComboBox.SelectedItem is ComboBoxItem selectedRole) {
+                string newRole = selectedRole.Content.ToString();
+
+                if (newRole == selectedUser.Role) {
+                    MessageBox.Show("Wybrana rola jest taka sama jak obecna.", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var confirm = MessageBox.Show($"Czy na pewno chcesz zmienić rolę użytkownika {selectedUser.Name} z {selectedUser.Role} na {newRole}?",
+                    "Potwierdź zmianę", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (confirm == MessageBoxResult.Yes) {
+                    try {
+                        bool success = Database.UpdateUserRole(selectedUser.ID, newRole);
+                        if (success) {
+                            MessageBox.Show($"Rola użytkownika została zmieniona pomyślnie na {newRole}.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadRoleUsers();
+                        } else {
+                            MessageBox.Show("Nie udało się zmienić roli użytkownika.", "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    } catch (Exception ex) {
+                        MessageBox.Show($"Błąd podczas zmiany roli użytkownika: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            } else {
+                MessageBox.Show("Wybierz użytkownika i nową rolę.", "Wymagane dane", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void LoadRoleUsers(string searchEmail = "") {
+            try {
+                var allUsers = Database.GetUsers();
+                // Filtrujemy, aby wykluczyć użytkowników z rolą "admin"
+                var filteredUsers = allUsers
+                    .Where(u => u.Role.ToLower() != "admin")
+                    .Where(u => string.IsNullOrEmpty(searchEmail) || u.Email.ToLower().Contains(searchEmail.ToLower()))
+                    .ToList();
+
+                RoleUsersDataGrid.ItemsSource = new ObservableCollection<User>(filteredUsers);
+            } catch (Exception ex) {
+                MessageBox.Show($"Błąd ładowania użytkowników: {ex.Message}", "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private void ConfirmReservationButton_Click(object sender, RoutedEventArgs e) {
+            if (PendingReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
+                try {
+                    bool success = Database.UpdateReservation(selectedReservation.ReservationID, "confirmed");
+                    if (success) {
+                        MessageBox.Show("Reservation confirmed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadPendingReservations();
+                        LoadReservations();
+                    } else {
+                        MessageBox.Show("Failed to confirm reservation.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                } catch (Exception ex) {
+                    MessageBox.Show($"Error confirming reservation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            } else {
+                MessageBox.Show("Please select a reservation to confirm.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void RefreshPendingReservationsButton_Click(object sender, RoutedEventArgs e) {
+            LoadPendingReservations();
         }
 
         private void OrderFullPlaneButton_Click(object sender, RoutedEventArgs e) {

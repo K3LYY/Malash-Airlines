@@ -203,60 +203,121 @@ namespace Malash_Airlines {
             }
         }
 
-        public static int AddReservation(int userId, int flightId, string seatNumber, decimal price) {
+        public static int AddReservation(int userId, int flightId, string seatNumber, decimal price, string status = "unconfirmed") {
             try {
                 using (var connection = new MySqlConnection(_connectionString)) {
                     connection.Open();
-                    
-                    // Sprawdzamy, czy rezerwacja typu "FULL" już istnieje dla tego lotu
+
+                    // Sprawdzamy, czy rezerwacja "FULL" już istnieje
                     if (seatNumber == "FULL") {
-                        // Sprawdzamy, czy lot jest już zarezerwowany
                         string checkQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID";
                         using (var checkCommand = new MySqlCommand(checkQuery, connection)) {
                             checkCommand.Parameters.AddWithValue("@FlightID", flightId);
                             int existingReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
-                            if (existingReservations > 0) {
-                                return -1; // Lot jest już częściowo zarezerwowany
-                            }
+                            if (existingReservations > 0) return -1;
                         }
-                    }
-                    // Jeśli to nie jest "FULL" rezerwacja, sprawdzamy czy miejsce jest dostępne
-                    else if (seatNumber != "FULL") {
-                        string checkQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = @SeatNumber";
-                        using (var checkCommand = new MySqlCommand(checkQuery, connection)) {
-                            checkCommand.Parameters.AddWithValue("@FlightID", flightId);
-                            checkCommand.Parameters.AddWithValue("@SeatNumber", seatNumber);
-                            int existingReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
-                            if (existingReservations > 0) {
-                                return -1; // Miejsce jest już zajęte
-                            }
+                    } else {
+                        // Sprawdzenie czy miejsce nie jest zajęte / nie ma FULL
+                        string checkSeatQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = @SeatNumber";
+                        using (var seatCmd = new MySqlCommand(checkSeatQuery, connection)) {
+                            seatCmd.Parameters.AddWithValue("@FlightID", flightId);
+                            seatCmd.Parameters.AddWithValue("@SeatNumber", seatNumber);
+                            if (Convert.ToInt32(seatCmd.ExecuteScalar()) > 0) return -1;
                         }
-                        
-                        // Sprawdzamy czy dla tego lotu nie ma rezerwacji "FULL"
+
                         string checkFullQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = 'FULL'";
-                        using (var checkCommand = new MySqlCommand(checkFullQuery, connection)) {
-                            checkCommand.Parameters.AddWithValue("@FlightID", flightId);
-                            int existingFullReservations = Convert.ToInt32(checkCommand.ExecuteScalar());
-                            if (existingFullReservations > 0) {
-                                return -1; // Cały samolot jest już zarezerwowany
-                            }
+                        using (var fullCmd = new MySqlCommand(checkFullQuery, connection)) {
+                            fullCmd.Parameters.AddWithValue("@FlightID", flightId);
+                            if (Convert.ToInt32(fullCmd.ExecuteScalar()) > 0) return -1;
                         }
                     }
-                    
-                    string query = "INSERT INTO reservations (UserID, FlightID, SeatNumber, Status) " +
-                        "VALUES (@UserID, @FlightID, @SeatNumber, 'confirmed'); SELECT LAST_INSERT_ID()";
-                    
-                    using (var command = new MySqlCommand(query, connection)) {
+
+                    // Dodaj rezerwację z wybranym statusem
+                    string insertQuery = @"
+                INSERT INTO reservations (UserID, FlightID, SeatNumber, Status)
+                VALUES (@UserID, @FlightID, @SeatNumber, @Status);
+                SELECT LAST_INSERT_ID();";
+
+                    using (var command = new MySqlCommand(insertQuery, connection)) {
                         command.Parameters.AddWithValue("@UserID", userId);
                         command.Parameters.AddWithValue("@FlightID", flightId);
                         command.Parameters.AddWithValue("@SeatNumber", seatNumber);
-                        
+                        command.Parameters.AddWithValue("@Status", status);
+
                         return Convert.ToInt32(command.ExecuteScalar());
                     }
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 throw new ApplicationException($"Error adding reservation: {ex.Message}", ex);
+            }
+        }
+
+        public static bool UpdateReservation(int reservationId, string newStatus) {
+            try {
+                using (var connection = new MySqlConnection(_connectionString)) {
+                    connection.Open();
+                    string updateQuery = @"
+                UPDATE reservations
+                SET Status = @Status
+                WHERE ID = @ReservationID;";
+
+                    using (var command = new MySqlCommand(updateQuery, connection)) {
+                        command.Parameters.AddWithValue("@Status", newStatus);
+                        command.Parameters.AddWithValue("@ReservationID", reservationId);
+
+                        return command.ExecuteNonQuery() > 0;
+                    }
+                }
+            } catch (Exception ex) {
+                throw new ApplicationException($"Error updating reservation: {ex.Message}", ex);
+            }
+        }
+
+        public static List<ReservationViewModel> GetUnconfirmedReservations() {
+            var result = new List<ReservationViewModel>();
+            try {
+                var unconfirmedReservations = GetReservations().Where(r => r.Status.ToLower() == "unconfirmed").ToList();
+                var userList = GetUsers();
+                var flightList = GetAvailableFlights();
+
+                foreach (var res in unconfirmedReservations) {
+                    var user = userList.FirstOrDefault(u => u.ID == res.UserID);
+                    var flight = flightList.FirstOrDefault(f => f.ID == res.FlightID)
+                        ?? GetFlightById(res.FlightID); // Próba pobrania lotu, nawet jeśli nie jest już dostępny
+
+                    if (user != null && flight != null) {
+                        result.Add(new ReservationViewModel {
+                            ReservationID = res.ID,
+                            UserName = user.Name,
+                            UserEmail = user.Email,
+                            FlightDetails = $"{flight.Departure} -> {flight.Destination}, {flight.Date:yyyy-MM-dd} {flight.Time}",
+                            SeatNumber = res.SeatNumber,
+                            Status = res.Status,
+                            UserID = res.UserID,
+                            FlightID = res.FlightID
+                        });
+                    }
+                }
+            } catch (Exception ex) {
+                throw new ApplicationException("Error retrieving unconfirmed reservations", ex);
+            }
+            return result;
+        }
+
+        public static bool UpdateUserRole(int userId, string newRole) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = "UPDATE users SET Role = @Role WHERE ID = @UserID;";
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@Role", newRole);
+                        command.Parameters.AddWithValue("@UserID", userId);
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Error updating user role: {ex.Message}", ex);
+                }
             }
         }
 

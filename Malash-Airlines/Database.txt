@@ -1,0 +1,61 @@
+DROP TABLE IF EXISTS `MalashAirlines`.`airports`;
+CREATE TABLE  `MalashAirlines`.`airports` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Location` varchar(255) NOT NULL,
+  `GatesCount` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `MalashAirlines`.`flights`;
+CREATE TABLE  `MalashAirlines`.`flights` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Departure` int(11) NOT NULL,
+  `Destination` int(11) NOT NULL,
+  `Date` date NOT NULL,
+  `Time` time NOT NULL,
+  `Price` decimal(10,2) NOT NULL,
+  `PlaneID` int(11) NOT NULL,
+  `FlightType` enum('public','private') NOT NULL DEFAULT 'public',
+  PRIMARY KEY (`ID`),
+  KEY `Departure` (`Departure`),
+  KEY `Destination` (`Destination`),
+  KEY `PlaneID` (`PlaneID`),
+  CONSTRAINT `flights_ibfk_1` FOREIGN KEY (`Departure`) REFERENCES `airports` (`ID`),
+  CONSTRAINT `flights_ibfk_2` FOREIGN KEY (`Destination`) REFERENCES `airports` (`ID`),
+  CONSTRAINT `flights_ibfk_3` FOREIGN KEY (`PlaneID`) REFERENCES `planes` (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `MalashAirlines`.`planes`;
+CREATE TABLE  `MalashAirlines`.`planes` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `SeatsLayout` text NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `MalashAirlines`.`reservations`;
+CREATE TABLE  `MalashAirlines`.`reservations` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `UserID` int(11) NOT NULL,
+  `FlightID` int(11) NOT NULL,
+  `SeatNumber` varchar(10) NOT NULL,
+  `Status` enum('confirmed','unconfirmed','pending','cancelled') DEFAULT 'pending',
+  PRIMARY KEY (`ID`),
+  KEY `UserID` (`UserID`),
+  KEY `FlightID` (`FlightID`),
+  CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`),
+  CONSTRAINT `reservations_ibfk_2` FOREIGN KEY (`FlightID`) REFERENCES `flights` (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `MalashAirlines`.`users`;
+CREATE TABLE  `MalashAirlines`.`users` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Email` varchar(255) NOT NULL,
+  `Password` varchar(255) NOT NULL,
+  `Role` enum('admin','employee','user') NOT NULL DEFAULT 'user',
+  `CustomerType` enum('normal','business') DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `Email` (`Email`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
