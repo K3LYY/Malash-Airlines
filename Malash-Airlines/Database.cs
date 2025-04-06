@@ -1,34 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using DotNetEnv;
 using MySql.Data.MySqlClient;
 
 namespace Malash_Airlines {
-    public class Database {
-        public string _connectionString;
+    internal static class Database {
+        private static string _connectionString;
 
-        public Database() {
-            Env.Load();
-            _connectionString = "connectionsting";
+        static Database() {
+            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
+            Env.Load(envPath);
+            _connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING is not set in the environment variables.");
         }
 
         // Existing methods from the original file...
-        public List<Flight> GetAvailableFlights() {
+        public static List<Flight> GetAvailableFlights() {
             var flights = new List<Flight>();
 
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
                     string query = @"
-                        SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
-                               F.Date, F.Time, F.Price, P.Name AS Plane
-                        FROM flights F
-                        JOIN airports A1 ON F.Departure = A1.ID
-                        JOIN airports A2 ON F.Destination = A2.ID
-                        JOIN planes P ON F.PlaneID = P.ID
-                        WHERE F.Date >= CURDATE()
-                        ORDER BY F.Date, F.Time;";
+                            SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
+                                   F.Date, F.Time, F.Price, P.Name AS Plane
+                            FROM flights F
+                            JOIN airports A1 ON F.Departure = A1.ID
+                            JOIN airports A2 ON F.Destination = A2.ID
+                            JOIN planes P ON F.PlaneID = P.ID
+                            WHERE F.Date >= CURDATE()
+                            ORDER BY F.Date, F.Time;";
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader()) {
@@ -52,7 +54,7 @@ namespace Malash_Airlines {
             return flights;
         }
 
-        public List<Airport> GetAirports() {
+        public static List<Airport> GetAirports() {
             var airports = new List<Airport>();
 
             using (var connection = new MySqlConnection(_connectionString)) {
@@ -78,25 +80,33 @@ namespace Malash_Airlines {
             return airports;
         }
 
-        public List<Plane> GetPlanes() {
+        public static List<Plane> GetPlanes()
+        {
             var planes = new List<Plane>();
 
-            using (var connection = new MySqlConnection(_connectionString)) {
-                try {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
                     connection.Open();
                     string query = "SELECT ID, Name, SeatsLayout FROM planes ORDER BY ID;";
 
                     using (var command = new MySqlCommand(query, connection))
-                    using (var reader = command.ExecuteReader()) {
-                        while (reader.Read()) {
-                            planes.Add(new Plane {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            planes.Add(new Plane
+                            {
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Name = reader["Name"].ToString(),
                                 SeatsLayout = reader["SeatsLayout"].ToString()
                             });
                         }
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     throw new ApplicationException("Error retrieving planes", ex);
                 }
             }
@@ -104,7 +114,57 @@ namespace Malash_Airlines {
             return planes;
         }
 
-        public int AddNewFlight(int departureId, int destinationId, DateTime flightDate,
+        public static List<Flight> GetSoonestFlights(int limit = 5)
+        {
+            var flights = new List<Flight>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string query = @"
+                    SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
+                           F.Date, F.Time, F.Price, P.Name AS Plane
+                    FROM flights F
+                    JOIN airports A1 ON F.Departure = A1.ID
+                    JOIN airports A2 ON F.Destination = A2.ID
+                    JOIN planes P ON F.PlaneID = P.ID
+                    WHERE F.Date >= CURDATE() OR (F.Date = CURDATE() AND F.Time >= CURTIME())
+                    ORDER BY F.Date, F.Time
+                    LIMIT @Limit;";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Limit", limit);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                flights.Add(new Flight
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    Departure = reader["Departure"].ToString(),
+                                    Destination = reader["Destination"].ToString(),
+                                    Date = Convert.ToDateTime(reader["Date"]),
+                                    Time = reader["Time"].ToString(),
+                                    Price = Convert.ToDecimal(reader["Price"]),
+                                    Plane = reader["Plane"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Error retrieving soonest flights", ex);
+                }
+            }
+
+            return flights;
+        }
+
+        public static int AddNewFlight(int departureId, int destinationId, DateTime flightDate,
                                  string time, decimal price, int planeId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
@@ -150,7 +210,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public bool ReserveSeat(int userId, int flightId, string seatNumber) {
+        public static bool ReserveSeat(int userId, int flightId, string seatNumber) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -186,7 +246,7 @@ namespace Malash_Airlines {
         }
 
         // New methods from the previous addition...
-        public List<User> GetUsers() {
+        public static List<User> GetUsers() {
             var users = new List<User>();
 
             using (var connection = new MySqlConnection(_connectionString)) {
@@ -213,7 +273,7 @@ namespace Malash_Airlines {
             return users;
         }
 
-        public int AddUser(string name, string email, string password, string role) {
+        public static int AddUser(string name, string email, string password, string role) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -236,7 +296,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public int AddPlane(string name, string seatsLayout) {
+        public static int AddPlane(string name, string seatsLayout) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -257,7 +317,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public bool RemovePlane(int planeId) {
+        public static bool RemovePlane(int planeId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -274,7 +334,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public int AddAirport(string name, string location) {
+        public static int AddAirport(string name, string location) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -295,7 +355,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public bool RemoveAirport(int airportId) {
+        public static bool RemoveAirport(int airportId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -312,7 +372,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public bool RemoveFlight(int flightId) {
+        public static bool RemoveFlight(int flightId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
@@ -329,7 +389,7 @@ namespace Malash_Airlines {
             }
         }
 
-        public List<Reservation> GetReservations(int? userId = null, int? flightId = null) {
+        public static List<Reservation> GetReservations(int? userId = null, int? flightId = null) {
             var reservations = new List<Reservation>();
 
             using (var connection = new MySqlConnection(_connectionString)) {
@@ -368,7 +428,7 @@ namespace Malash_Airlines {
             return reservations;
         }
 
-        public bool RemoveReservation(int reservationId) {
+        public static bool RemoveReservation(int reservationId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
                     connection.Open();
