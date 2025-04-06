@@ -501,7 +501,7 @@ namespace Malash_Airlines {
                         return rowsAffected > 0;
                     }
                 } catch (Exception ex) {
-                    throw new ApplicationException("Error removing airport", ex);
+                    throw new ApplicationException("Error removing airport: " + ex.ToString(), ex);
                 }
             }
         }
