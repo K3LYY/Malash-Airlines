@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="Flight Map Visualization" Height="500" Width="700" 
+        Title="Flight Map Visualization" Height="550" Width="800" 
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -14,19 +14,19 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="Width" Value="100"/>
+            <Setter Property="Width" Value="120"/>
             <Setter Property="Height" Value="35"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Gradient dla tła przycisku -->
+            <!-- Gradient background -->
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                         <GradientStop Color="#4682B4" Offset="0"/>
-                        <!-- Ciemniejszy niebieski (SteelBlue) -->
+                        <!-- Steel Blue -->
                         <GradientStop Color="#2F4F4F" Offset="1"/>
-                        <!-- Bardzo ciemny szary (DarkSlateGray) -->
+                        <!-- Dark Slate Gray -->
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
@@ -36,9 +36,9 @@
                         <Setter.Value>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#5A9BD4" Offset="0"/>
-                                <!-- Jaśniejszy niebieski przy najechaniu -->
+                                <!-- Lighter blue on hover -->
                                 <GradientStop Color="#3F6F6F" Offset="1"/>
-                                <!-- Jaśniejszy szary przy najechaniu -->
+                                <!-- Lighter gray on hover -->
                             </LinearGradientBrush>
                         </Setter.Value>
                     </Setter>
@@ -58,11 +58,25 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Map Canvas -->
-        <Canvas x:Name="mapCanvas" Grid.Row="0" Width="680" Height="400" Background="White" Margin="10"/>
+        <!-- Map Canvas with border for better appearance -->
+        <Border Grid.Row="0" 
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1" 
+                CornerRadius="5" 
+                Margin="10">
+            <Canvas x:Name="mapCanvas" 
+                    Width="780" 
+                    Height="450" 
+                    Background="AliceBlue" 
+                    ClipToBounds="True" />
+        </Border>
 
         <!-- Close Button -->
-        <Button Grid.Row="1" Content="Close" Style="{StaticResource mapButton}" 
-                HorizontalAlignment="Center" Margin="10" Click="CloseButton_Click"/>
+        <Button Grid.Row="1" 
+                Content="Close Map" 
+                Style="{StaticResource mapButton}" 
+                HorizontalAlignment="Center" 
+                Margin="0,5,0,10" 
+                Click="CloseButton_Click"/>
     </Grid>
 </Window>
