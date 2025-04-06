@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using QuestPDF.Infrastructure;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using pdfColor = QuestPDF.Infrastructure.Color;
+using Color = System.Windows.Media.Color;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace Malash_Airlines
 {
@@ -26,8 +31,16 @@ namespace Malash_Airlines
             //layout.Show();
             //Database db = new Database();
             //MessageBox.Show(db.GetAirports().Count().ToString());
-            //mail_functions.SendOneTimePassword("kacper.zaluska7@gmail.com");
+            QuestPDF.Settings.License = LicenseType.Community;
+            PDFGenerationService pdf = new PDFGenerationService();
+            var ticketInfo = new FlightTicketInfo
+            {
+                PassengerName = "Jan Kowalski",
+                FlightNumber = "LO1234",
+                SeatNumber = "18A"
+            };
 
+            pdf.GenerateDocuments(ticketInfo);
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
