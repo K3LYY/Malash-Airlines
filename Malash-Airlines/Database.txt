@@ -59,3 +59,21 @@ CREATE TABLE  `MalashAirlines`.`users` (
   PRIMARY KEY (`ID`),
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `MalashAirlines`.`invoices`;
+CREATE TABLE  `MalashAirlines`.`invoices` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ReservationID` int(11) NOT NULL,
+  `Amount` decimal(10,2) NOT NULL,
+  `Status` enum('paid','unpaid','cancelled') NOT NULL DEFAULT 'unpaid',
+  `IssueDate` date NOT NULL,
+  `DueDate` date NOT NULL,
+  `PaymentDate` date DEFAULT NULL,
+  `InvoiceNumber` varchar(50) NOT NULL,
+  `Notes` text DEFAULT NULL,
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `InvoiceNumber` (`InvoiceNumber`),
+  KEY `ReservationID` (`ReservationID`),
+  KEY `Status` (`Status`),
+  CONSTRAINT `invoices_ibfk_1` FOREIGN KEY (`ReservationID`) REFERENCES `reservations` (`ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
