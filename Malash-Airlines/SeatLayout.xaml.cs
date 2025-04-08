@@ -8,6 +8,7 @@ namespace Malash_Airlines
 {
     public partial class SeatLayout : Window
     {
+        public SeatInfo SelectedSeatInfo { get; private set; }
         private List<Button> allSeats = new List<Button>();
         private Button selectedSeat = null;
 
@@ -105,10 +106,11 @@ namespace Malash_Airlines
                 selectedSeat.Background = Brushes.Orange;
                 selectedSeat.Content = "✓";
 
-                MessageBox.Show($"Selected seat: {seatInfo.SeatNumber} ({(seatInfo.IsFirstClass ? "First Class" : "Economy")})",
-                    "Seat Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Ustawienie SeatInfo dla okna rezerwacji
+                SelectedSeatInfo = seatInfo;
             }
         }
+
 
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {

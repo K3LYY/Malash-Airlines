@@ -68,10 +68,10 @@ namespace Malash_Airlines
             }
             UpdateLoginButtonVisibility();
         }
-        
 
-    
-        
+
+
+
 
         public void Timer_Tick(object sender, EventArgs e)
         {
@@ -81,7 +81,7 @@ namespace Malash_Airlines
         private void UpdateLoginButtonVisibility()
         {
 
-            if (AppSession.isLoggedIn == true)
+            if (AppSession.IsLoggedIn == true)
             {
                 //loginButton.Visibility = AppSession.isLoggedIn ? Visibility.Collapsed : Visibility.Visible;
                 loginButton.Content = "Wyloguj";
@@ -89,7 +89,7 @@ namespace Malash_Airlines
                 Label lbl = new Label();
 
                 Label etykieta = new Label();
-                etykieta.Content = "Zalogowano mailem " + AppSession.eMail;
+                etykieta.Content = "Zalogowano mailem " + AppSession.Email;
                 etykieta.FontSize = 18;
                 etykieta.Margin = new Thickness(10);
                 Grid.SetRow(etykieta, 2); // Umieszczenie etykiety w drugim wierszu Grid
@@ -121,7 +121,7 @@ namespace Malash_Airlines
                 return;
             }
 
-       
+
 
             Flight flight = currentFlights[index];
 
@@ -328,5 +328,13 @@ namespace Malash_Airlines
             FlightMapVisualization mapWindow = new FlightMapVisualization(flight);
             mapWindow.ShowDialog();
         }
+
+        private void OpenReservationPanel_Click(object sender, RoutedEventArgs e)
+        {
+            ReservationWindow reservationWindow = new ReservationWindow();
+            reservationWindow.Show(); // Use .ShowDialog() if you want it modal
+        }
+
+
     }
 }
