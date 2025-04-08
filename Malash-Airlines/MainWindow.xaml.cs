@@ -25,22 +25,22 @@ namespace Malash_Airlines
         public MainWindow()
         {
             InitializeComponent();
-            WorkerPanel panel = new WorkerPanel();
-            panel.Show();
+            //WorkerPanel panel = new WorkerPanel();
+            //panel.Show();
             //SeatLayout layout = new SeatLayout();
             //layout.Show();
             //Database db = new Database();
             //MessageBox.Show(db.GetAirports().Count().ToString());
             QuestPDF.Settings.License = LicenseType.Community;
-            PDFGenerationService pdf = new PDFGenerationService();
-            var ticketInfo = new FlightTicketInfo
-            {
-                PassengerName = "Jan Kowalski",
-                FlightNumber = "LO1234",
-                SeatNumber = "18A"
-            };
+            //PDFGenerationService pdf = new PDFGenerationService();
+            //var ticketInfo = new FlightTicketInfo
+            //{
+            //    PassengerName = "Jan Kowalski",
+            //    FlightNumber = "LO1234",
+            //    SeatNumber = "18A"
+            //};
 
-            pdf.GenerateDocuments(ticketInfo);
+            //pdf.GenerateDocuments(ticketInfo);
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)

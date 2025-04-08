@@ -33,42 +33,43 @@ namespace Malash_Airlines
             _logoPath = logoPath ?? Path.Combine(Directory.GetCurrentDirectory(), "logo.png");
         }
 
-        public PDFGenerationResult GenerateDocuments(FlightTicketInfo ticketInfo)
-        {
-            string ticketPath = Path.Combine(_documentFolder, $"FlightTicket_{ticketInfo.PassengerName}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
-            string invoicePath = Path.Combine(_documentFolder, $"Invoice_{ticketInfo.PassengerName}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+        public PDFGenerationResult GenerateDocuments(Reservation reservation, User user, Flight flight) {
+            string ticketPath = Path.Combine(_documentFolder, $"FlightTicket_{user.Name}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+            string invoicePath = Path.Combine(_documentFolder, $"Invoice_{user.Name}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
 
-            GenerateFlightTicket(ticketInfo, ticketPath);
+            // Konwersja danych dla zachowania kompatybilności z metodą GenerateInvoice
+            var ticketInfo = new FlightTicketInfo {
+                PassengerName = user.Name,
+                FlightNumber = flight.ID.ToString(),
+                SeatNumber = reservation.SeatNumber
+            };
+
+            GenerateFlightTicket(reservation, user, flight, ticketPath);
             GenerateInvoice(ticketInfo, invoicePath);
 
-            return new PDFGenerationResult
-            {
+            return new PDFGenerationResult {
                 TicketPath = ticketPath,
                 InvoicePath = invoicePath
             };
         }
 
-        private void GenerateFlightTicket(FlightTicketInfo ticketInfo, string outputPath)
-        {
-            Document.Create(container =>
-            {
-                container.Page(page =>
-                {
+        private void GenerateFlightTicket(Reservation reservation, User user, Flight flight, string outputPath) {
+            Document.Create(container => {
+                container.Page(page => {
                     page.Size(PageSizes.A5.Landscape());
                     page.Margin(30);
                     page.DefaultTextStyle(x => x.FontSize(12));
 
                     page.Header().Element(ComposeTicketHeader);
 
-                    page.Content().PaddingVertical(10).Column(col =>
-                    {
+                    page.Content().PaddingVertical(10).Column(col => {
                         col.Item().LineHorizontal(2).LineColor("#003366");
-                        col.Item().Text($"Passenger: {ticketInfo.PassengerName}").FontSize(14).Bold();
-                        col.Item().Text($"Flight Number: {ticketInfo.FlightNumber}");
-                        col.Item().Text($"Seat Number: {ticketInfo.SeatNumber}");
-                        col.Item().Text($"Date: {DateTime.Now:dd MMMM yyyy}");
-                        col.Item().Text($"Boarding Time: 10:00 AM");
-                        col.Item().Text($"Destination: New York (JFK)");
+                        col.Item().Text($"Passenger: {user.Name}").FontSize(14).Bold();
+                        col.Item().Text($"Flight Number: {flight.ID}");
+                        col.Item().Text($"Seat Number: {reservation.SeatNumber}");
+                        col.Item().Text($"Date: {flight.Date:dd MMMM yyyy}");
+                        col.Item().Text($"Boarding Time: {flight.Time}");
+                        col.Item().Text($"Destination: {flight.Destination}");
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                     });
 
