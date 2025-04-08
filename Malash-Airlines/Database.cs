@@ -913,7 +913,7 @@ namespace Malash_Airlines {
             return null;
         }
 
-
+    }
         public class Flight {
             public string FlightDetails { get; set; }
             public int ID { get; set; }
@@ -967,4 +967,3 @@ namespace Malash_Airlines {
             public string Notes { get; set; }
         }
     }
-}
