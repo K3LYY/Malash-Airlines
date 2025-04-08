@@ -205,6 +205,10 @@ namespace Malash_Airlines
             mainWindow.Show();
             this.Close();
         }
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+           ReturnToMainWindow();
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -328,11 +332,7 @@ namespace Malash_Airlines
             statusMessage.Text = "Changes cancelled";
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Return to main window
-            this.Close();
-        }
+       
 
         private void ReservationsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
