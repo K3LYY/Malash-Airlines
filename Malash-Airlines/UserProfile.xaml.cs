@@ -40,8 +40,8 @@ namespace Malash_Airlines
                     // Display user data in form
                     nameTextBox.Text = originalUserData.Name;
                     emailTextBox.Text = originalUserData.Email;
-                    usernameTextBox.Text = originalUserData.Name; // Using Name as username
-                    customerTypeTextBox.Text = originalUserData.CustomerType ?? "Standard";
+                    //usernameTextBox.Text = originalUserData.Name; // Using Name as username
+                    //customerTypeTextBox.Text = originalUserData.CustomerType ?? "Standard";
 
                     statusMessage.Text = "User profile loaded successfully.";
                 }
@@ -64,15 +64,15 @@ namespace Malash_Airlines
             {
                 // Validate inputs
                 if (string.IsNullOrWhiteSpace(nameTextBox.Text) ||
-                    string.IsNullOrWhiteSpace(emailTextBox.Text) ||
-                    string.IsNullOrWhiteSpace(usernameTextBox.Text))
+                    string.IsNullOrWhiteSpace(emailTextBox.Text)/* ||
+                    string.IsNullOrWhiteSpace(usernameTextBox.Text)*/)
                 {
                     MessageBox.Show("All fields must be filled in.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 // Prepare updated user data (for database update)
-                string updatedName = usernameTextBox.Text;
+                //string updatedName = usernameTextBox.Text;
                 string updatedName = nameTextBox.Text;
                 string updatedEmail = emailTextBox.Text;
 
@@ -137,15 +137,15 @@ namespace Malash_Airlines
                 throw new InvalidOperationException("DATABASE_CONNECTION_STRING is not set in the environment variables.");
         }
 
-        //private void Cancel_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Reset form to original values
-        //    nameTextBox.Text = originalUserData.Name;
-        //    emailTextBox.Text = originalUserData.Email;
-        //    usernameTextBox.Text = originalUserData.Name;
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset form to original values
+            nameTextBox.Text = originalUserData.Name;
+            emailTextBox.Text = originalUserData.Email;
+            //usernameTextBox.Text = originalUserData.Name;
 
-        //    statusMessage.Text = "Changes canceled.";
-        //}
+            statusMessage.Text = "Changes canceled.";
+        }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
