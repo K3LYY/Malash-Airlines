@@ -709,9 +709,6 @@ namespace Malash_Airlines {
                         }
                     }
 
-        
-    }
-
                     // Generate a unique invoice number (format: INV-YYYYMMDD-XXXX) if not provided
                     string invoiceNumber = invoice.InvoiceNumber;
                     if (string.IsNullOrEmpty(invoiceNumber)) {
