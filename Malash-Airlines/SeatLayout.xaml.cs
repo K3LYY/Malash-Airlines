@@ -6,100 +6,50 @@ using System.Windows.Media;
 
 namespace Malash_Airlines
 {
-    public partial class SeatLayout : UserControl
+    public partial class SeatLayout : Window
     {
-        public event EventHandler<SeatSelectedEventArgs> SeatSelected;
-
         private List<Button> allSeats = new List<Button>();
         private Button selectedSeat = null;
-        private List<string> reservedSeats = new List<string>();
 
         public SeatLayout()
         {
             InitializeComponent();
+            CreateFirstClassSeats();
+            CreateEconomySeats();
         }
 
-        public void InitializeSeats(string seatLayout, List<string> reservedSeats)
+        private void CreateFirstClassSeats()
         {
-            this.reservedSeats = reservedSeats;
-            ClearExistingSeats();
-
-            // Parse seat layout and create seats
-            var seatNumbers = ParseSeatLayout(seatLayout);
-
-            foreach (var seatNumber in seatNumbers)
+            for (int row = 1; row <= 4; row++)
             {
-                bool isFirstClass = seatNumber.StartsWith("1") || seatNumber.StartsWith("2") ||
-                                  seatNumber.StartsWith("3") || seatNumber.StartsWith("4");
+                TextBlock rowNumber = new TextBlock
+                {
+                    Text = row.ToString(),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                Grid.SetRow(rowNumber, row);
+                Grid.SetColumn(rowNumber, 0);
+                FirstClassGrid.Children.Add(rowNumber);
 
-                int row = int.Parse(seatNumber.Substring(0, seatNumber.Length - 1));
-                char column = seatNumber[^1];
+                CreateSeat(FirstClassGrid, row, 1, $"{row}A", true);
+                CreateSeat(FirstClassGrid, row, 2, $"{row}B", true);
+                CreateSeat(FirstClassGrid, row, 4, $"{row}C", true);
+                CreateSeat(FirstClassGrid, row, 5, $"{row}D", true);
+            }
+        }
 
-                AddSeat(row, column, seatNumber, isFirstClass);
+        private void CreateEconomySeats()
+        {
+            for (int i = 0; i < 26; i++)
+            {
+                EconomyGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(40) });
             }
 
-            MarkReservedSeats();
-        }
-
-        private void ClearExistingSeats()
-        {
-            FirstClassGrid.Children.Clear();
-            EconomyGrid.Children.Clear();
-            allSeats.Clear();
-
-            // Re-add headers
-            InitializeHeaders();
-        }
-
-        private void InitializeHeaders()
-        {
-            // First Class Headers
-            TextBlock fcA = new TextBlock { Text = "A", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock fcB = new TextBlock { Text = "B", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock fcC = new TextBlock { Text = "C", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock fcD = new TextBlock { Text = "D", HorizontalAlignment = HorizontalAlignment.Center };
-
-            Grid.SetRow(fcA, 0); Grid.SetColumn(fcA, 1);
-            Grid.SetRow(fcB, 0); Grid.SetColumn(fcB, 2);
-            Grid.SetRow(fcC, 0); Grid.SetColumn(fcC, 4);
-            Grid.SetRow(fcD, 0); Grid.SetColumn(fcD, 5);
-
-            FirstClassGrid.Children.Add(fcA);
-            FirstClassGrid.Children.Add(fcB);
-            FirstClassGrid.Children.Add(fcC);
-            FirstClassGrid.Children.Add(fcD);
-
-            // Economy Headers
-            TextBlock eA = new TextBlock { Text = "A", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock eB = new TextBlock { Text = "B", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock eC = new TextBlock { Text = "C", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock eD = new TextBlock { Text = "D", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock eE = new TextBlock { Text = "E", HorizontalAlignment = HorizontalAlignment.Center };
-            TextBlock eF = new TextBlock { Text = "F", HorizontalAlignment = HorizontalAlignment.Center };
-
-            Grid.SetRow(eA, 0); Grid.SetColumn(eA, 1);
-            Grid.SetRow(eB, 0); Grid.SetColumn(eB, 2);
-            Grid.SetRow(eC, 0); Grid.SetColumn(eC, 3);
-            Grid.SetRow(eD, 0); Grid.SetColumn(eD, 5);
-            Grid.SetRow(eE, 0); Grid.SetColumn(eE, 6);
-            Grid.SetRow(eF, 0); Grid.SetColumn(eF, 7);
-
-            EconomyGrid.Children.Add(eA);
-            EconomyGrid.Children.Add(eB);
-            EconomyGrid.Children.Add(eC);
-            EconomyGrid.Children.Add(eD);
-            EconomyGrid.Children.Add(eE);
-            EconomyGrid.Children.Add(eF);
-        }
-
-        private void AddSeat(int row, char column, string seatNumber, bool isFirstClass)
-        {
-            Grid parentGrid = isFirstClass ? FirstClassGrid : EconomyGrid;
-            int gridRow = isFirstClass ? row : row - 4;
-
-            // Add row number if needed
-            if (parentGrid.Children.OfType<TextBlock>().FirstOrDefault(t => Grid.GetRow(t) == gridRow && Grid.GetColumn(t) == 0) == null)
+            for (int row = 5; row <= 30; row++)
             {
+                int gridRow = row - 4;
+
                 TextBlock rowNumber = new TextBlock
                 {
                     Text = row.ToString(),
@@ -108,81 +58,75 @@ namespace Malash_Airlines
                 };
                 Grid.SetRow(rowNumber, gridRow);
                 Grid.SetColumn(rowNumber, 0);
-                parentGrid.Children.Add(rowNumber);
+                EconomyGrid.Children.Add(rowNumber);
+
+                CreateSeat(EconomyGrid, gridRow, 1, $"{row}A", false);
+                CreateSeat(EconomyGrid, gridRow, 2, $"{row}B", false);
+                CreateSeat(EconomyGrid, gridRow, 3, $"{row}C", false);
+                CreateSeat(EconomyGrid, gridRow, 5, $"{row}D", false);
+                CreateSeat(EconomyGrid, gridRow, 6, $"{row}E", false);
+                CreateSeat(EconomyGrid, gridRow, 7, $"{row}F", false);
             }
+        }
 
-            // Determine column position based on seat letter
-            int gridColumn = column switch
-            {
-                'A' => 1,
-                'B' => 2,
-                'C' => isFirstClass ? 4 : 3,
-                'D' => isFirstClass ? 5 : 5,
-                'E' => 6,
-                'F' => 7,
-                _ => 1
-            };
-
+        private void CreateSeat(Grid parentGrid, int row, int column, string seatNumber, bool isFirstClass)
+        {
             Button seat = new Button
             {
-                Content = column.ToString(),
+                Content = seatNumber[^1..], // Last character of seatNumber
                 Width = isFirstClass ? 40 : 30,
                 Height = isFirstClass ? 40 : 30,
                 Margin = new Thickness(2),
                 Background = isFirstClass ? Brushes.LightBlue : Brushes.LightGreen,
-                Tag = seatNumber
+                Tag = new SeatInfo { SeatNumber = seatNumber, IsFirstClass = isFirstClass }
             };
 
             seat.Click += Seat_Click;
-            Grid.SetRow(seat, gridRow);
-            Grid.SetColumn(seat, gridColumn);
+
+            Grid.SetRow(seat, row);
+            Grid.SetColumn(seat, column);
+
             parentGrid.Children.Add(seat);
             allSeats.Add(seat);
         }
 
-        private void MarkReservedSeats()
-        {
-            foreach (Button seat in allSeats)
-            {
-                if (reservedSeats.Contains(seat.Tag.ToString()))
-                {
-                    seat.Background = Brushes.LightGray;
-                    seat.Content = "X";
-                    seat.IsEnabled = false;
-                }
-            }
-        }
-
         private void Seat_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button clickedSeat)
+            if (sender is Button clickedSeat && clickedSeat.Tag is SeatInfo seatInfo)
             {
                 if (selectedSeat != null)
                 {
-                    // Reset previously selected seat
-                    bool wasFirstClass = selectedSeat.Background == Brushes.LightBlue;
-                    selectedSeat.Background = wasFirstClass ? Brushes.LightBlue : Brushes.LightGreen;
-                    selectedSeat.Content = selectedSeat.Tag.ToString()[^1..];
+                    SeatInfo prevSeatInfo = selectedSeat.Tag as SeatInfo;
+                    selectedSeat.Background = prevSeatInfo.IsFirstClass ? Brushes.LightBlue : Brushes.LightGreen;
+                    selectedSeat.Content = prevSeatInfo.SeatNumber[^1..];
                 }
 
-                // Select new seat
                 selectedSeat = clickedSeat;
                 selectedSeat.Background = Brushes.Orange;
                 selectedSeat.Content = "✓";
 
-                // Raise selection event
-                SeatSelected?.Invoke(this, new SeatSelectedEventArgs(selectedSeat.Tag.ToString()));
+                MessageBox.Show($"Selected seat: {seatInfo.SeatNumber} ({(seatInfo.IsFirstClass ? "First Class" : "Economy")})",
+                    "Seat Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedSeat != null && selectedSeat.Tag is SeatInfo seatInfo)
+            {
+                MessageBox.Show($"You have confirmed seat {seatInfo.SeatNumber}.\nClass: {(seatInfo.IsFirstClass ? "First Class" : "Economy")}",
+                    "Confirmation", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("Please select a seat first.", "No Seat Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }
 
-    public class SeatSelectedEventArgs : EventArgs
+    public class SeatInfo
     {
-        public string SeatNumber { get; }
-
-        public SeatSelectedEventArgs(string seatNumber)
-        {
-            SeatNumber = seatNumber;
-        }
+        public string SeatNumber { get; set; }
+        public bool IsFirstClass { get; set; }
     }
 }

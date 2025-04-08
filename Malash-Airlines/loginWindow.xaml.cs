@@ -63,10 +63,10 @@ namespace Malash_Airlines {
 
                 if (user != null) {
 
-                    AppSession.Email = user.Email;
-                    AppSession.IsLoggedIn = true;
+                    AppSession.eMail = user.Email;
+                    AppSession.isLoggedIn = true;
                     // Successful login
-                    MessageBox.Show($"Witaj, {AppSession.Email}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Witaj, {AppSession.eMail}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // TODO: Open main application window
                     // For now, just close the login window
