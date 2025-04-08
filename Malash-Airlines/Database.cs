@@ -709,6 +709,32 @@ namespace Malash_Airlines {
             }
             return null;
         }
+
+        public static bool UpdateUser(int userId, string name, string email)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    string query = "UPDATE users SET Name = @Name, Email = @Email WHERE ID = @UserID;";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Name", name);
+                        command.Parameters.AddWithValue("@Email", email);
+                        command.Parameters.AddWithValue("@UserID", userId);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException($"Error updating user: {ex.Message}", ex);
+                }
+            }
+        }
     }
 
     public class Flight {

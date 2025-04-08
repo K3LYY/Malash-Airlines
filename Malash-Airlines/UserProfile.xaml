@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="User Profile" Height="500" Width="700" ResizeMode="NoResize"
+        Title="User Profile" Height="700" Width="700" ResizeMode="NoResize"
         Loaded="Window_Loaded"
         Background="#F5F7FA">
 
@@ -110,7 +110,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="User Information" FontSize="22" FontWeight="Bold" Foreground="#4682B4" Margin="0,0,0,20"/>
+                    <TextBlock Text="User Information" FontSize="22" FontWeight="Bold" Foreground="#4682B4" Margin="0,0,0,10"/>
 
                     <Label Content="Full Name:" Style="{StaticResource profileLabels}"/>
                     <TextBox x:Name="nameTextBox" Style="{StaticResource profileTextBoxes}"/>
@@ -118,13 +118,13 @@
                     <Label Content="Email:" Style="{StaticResource profileLabels}"/>
                     <TextBox x:Name="emailTextBox" Style="{StaticResource profileTextBoxes}"/>
 
-                    <Label Content="Username:" Style="{StaticResource profileLabels}"/>
-                    <TextBox x:Name="usernameTextBox" Style="{StaticResource profileTextBoxes}"/>
+          <!--          <Label Content="Username:" Style="{StaticResource profileLabels}"/>
+                    <TextBox x:Name="usernameTextBox" Style="{StaticResource profileTextBoxes}"/> -->
 
-                    <Label Content="Customer Type:" Style="{StaticResource profileLabels}"/>
-                    <TextBox x:Name="customerTypeTextBox" Style="{StaticResource profileTextBoxes}" IsReadOnly="True"/>
+          <!--          <Label Content="Customer Type:" Style="{StaticResource profileLabels}"/>
+                    <TextBox x:Name="customerTypeTextBox" Style="{StaticResource profileTextBoxes}" IsReadOnly="True"/> -->
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0" Cursor="">
                         <Button Content="Save Changes" Click="SaveChanges_Click" Width="170" Margin="10"/>
                         <Button Content="Cancel" Click="Cancel_Click" Width="170" Margin="10"/>
                     </StackPanel>

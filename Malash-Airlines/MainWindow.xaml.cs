@@ -370,5 +370,12 @@ namespace Malash_Airlines
             FlightMapVisualization mapWindow = new FlightMapVisualization(flight);
             mapWindow.ShowDialog();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            UserProfile userProfile = new UserProfile();
+            userProfile.Show();
+            this.Close();
+        }
     }
 }
