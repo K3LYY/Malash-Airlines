@@ -16,6 +16,8 @@ namespace Malash_Airlines {
             _connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") ?? throw new InvalidOperationException("DATABASE_CONNECTION_STRING is not set in the environment variables.");
         }
 
+        
+
         public static List<Flight> GetAvailableFlights() {
             var flights = new List<Flight>();
 
@@ -939,6 +941,26 @@ namespace Malash_Airlines {
                 }
             }
         }
+
+        public static bool UpdateFlightPrice(int flightId, decimal newPrice) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = "UPDATE flights SET Price = @Price WHERE ID = @FlightID;";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@Price", newPrice);
+                        command.Parameters.AddWithValue("@FlightID", flightId);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Error updating flight price: {ex.Message}", ex);
+                }
+            }
+        }
+
     }
         public class Flight {
             public string FlightDetails { get; set; }

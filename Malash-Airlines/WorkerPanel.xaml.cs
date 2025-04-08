@@ -304,44 +304,73 @@ namespace Malash_Airlines {
         private void ConfirmReservationButton_Click(object sender, RoutedEventArgs e) {
             if (PendingReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
                 try {
-                    // Aktualizujemy status rezerwacji na "pending"
-                    bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
-                    if (updateSuccess) {
-                        // Pobieramy dane lotu, aby ustalić wartość faktury
-                        Flight flight = Database.GetFlightById(selectedReservation.FlightID);
-                        if (flight == null) {
-                            throw new ApplicationException("Associated flight not found.");
+                    // Pobieramy dane lotu, aby zaproponować domyślną cenę
+                    Flight flight = Database.GetFlightById(selectedReservation.FlightID);
+                    if (flight == null) {
+                        throw new ApplicationException("Nie znaleziono lotu powiązanego z rezerwacją.");
+                    }
+
+                    // Tworzymy okno dialogowe do wprowadzenia ceny
+                    var priceInputDialog = new InputDialog(
+                        "Podaj cenę rezerwacji",
+                        "Cena (PLN):",
+                        flight.Price.ToString());
+
+                    if (priceInputDialog.ShowDialog() == true) {
+                        // Parsujemy cenę z okna dialogowego
+                        if (!decimal.TryParse(priceInputDialog.ResponseText, out decimal price)) {
+                            MessageBox.Show("Wprowadzona wartość nie jest prawidłową ceną.",
+                                "Błąd walidacji", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
                         }
 
-                        // Tworzymy nową fakturę
-                        Invoice invoice = new Invoice {
-                            ReservationID = selectedReservation.ReservationID,
-                            Amount = flight.Price,
-                            IssueDate = DateTime.Now,
-                            DueDate = DateTime.Now.AddDays(7),
-                            Status = "unpaid",
-                            InvoiceNumber = "", // Jeśli nie podamy numeru, metoda AddInvoice wygeneruje unikalny numer
-                            Notes = $"Invoice for reservation ID {selectedReservation.ReservationID}"
-                        };
-
-                        int invoiceId = Database.AddInvoice(invoice);
-                        if (invoiceId <= 0) {
-                            throw new ApplicationException("Invoice creation failed.");
+                        // Aktualizujemy cenę lotu w bazie danych
+                        bool priceUpdateSuccess = Database.UpdateFlightPrice(selectedReservation.FlightID, price);
+                        if (!priceUpdateSuccess) {
+                            MessageBox.Show("Nie udało się zaktualizować ceny lotu.",
+                                "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
                         }
 
-                        MessageBox.Show("Reservation marked pending and invoice created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        LoadPendingReservations();
-                        LoadReservations();
-                    } else {
-                        MessageBox.Show("Failed to update reservation status.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        // Aktualizujemy status rezerwacji na "pending"
+                        bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
+                        if (updateSuccess) {
+                            // Tworzymy nową fakturę z wprowadzoną ceną
+                            Invoice invoice = new Invoice {
+                                ReservationID = selectedReservation.ReservationID,
+                                Amount = price,
+                                IssueDate = DateTime.Now,
+                                DueDate = DateTime.Now.AddDays(7),
+                                Status = "unpaid",
+                                InvoiceNumber = "", // Metoda AddInvoice wygeneruje unikalny numer
+                                Notes = $"Faktura za rezerwację ID {selectedReservation.ReservationID}"
+                            };
+
+                            int invoiceId = Database.AddInvoice(invoice);
+                            if (invoiceId <= 0) {
+                                throw new ApplicationException("Nie udało się utworzyć faktury.");
+                            }
+
+                            MessageBox.Show("Rezerwacja potwierdzona, cena lotu zaktualizowana, a faktura wystawiona pomyślnie!",
+                                "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadPendingReservations();
+                            LoadReservations();
+                            LoadFlights(); // Odświeżamy listę lotów, aby zobaczyć zmienioną cenę
+                        } else {
+                            MessageBox.Show("Nie udało się zaktualizować statusu rezerwacji.",
+                                "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                 } catch (Exception ex) {
-                    MessageBox.Show($"Error confirming reservation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Błąd podczas potwierdzania rezerwacji: {ex.Message}",
+                        "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             } else {
-                MessageBox.Show("Please select a reservation to confirm.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Proszę wybrać rezerwację do potwierdzenia.",
+                    "Wymagane zaznaczenie", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
 
         private void RefreshPendingReservationsButton_Click(object sender, RoutedEventArgs e) {
             LoadPendingReservations();
