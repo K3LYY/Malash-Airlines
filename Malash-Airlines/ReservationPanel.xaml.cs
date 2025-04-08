@@ -10,10 +10,31 @@ namespace Malash_Airlines {
         private List<Flight> availableFlights;
         private Flight selectedFlight;
         private string selectedSeatNumber;
+        private List<Airport> airports;
+        private List<Plane> planes;
 
         public ReservationPanel() {
             InitializeComponent();
+            LoadData();
+            CheckUserAccess();
+        }
+
+        private void LoadData() {
             LoadAvailableFlights();
+            LoadAirportsAndPlanes();
+            SetupTimeComboBox();
+        }
+
+        private void CheckUserAccess() {
+            // Sprawdź, czy użytkownik ma dostęp do zakładki rezerwacji prywatnych
+            bool isBusinessUser = AppSession.isLoggedIn && AppSession.CurrentUser != null &&
+                                  AppSession.CurrentUser.CustomerType?.ToLower() == "business";
+
+            // Jeśli użytkownik nie jest zalogowany lub nie jest klientem biznesowym, ukryj drugą zakładkę
+            PrivateTabItem.Visibility = isBusinessUser ? Visibility.Visible : Visibility.Collapsed;
+
+            // Ustaw domyślnie pierwszą zakładkę
+            MainTabControl.SelectedIndex = 0;
         }
 
         private void LoadAvailableFlights() {
@@ -29,6 +50,35 @@ namespace Malash_Airlines {
             } catch (Exception ex) {
                 MessageBox.Show($"Błąd podczas ładowania lotów: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void LoadAirportsAndPlanes() {
+            try {
+                // Pobierz lotniska i samoloty dla zakładki rezerwacji prywatnych
+                airports = Database.GetAirports();
+                planes = Database.GetPlanes();
+
+                // Przypisz dane do kontrolek
+                DepartureAirportComboBox.ItemsSource = airports;
+                DestinationAirportComboBox.ItemsSource = airports;
+                AircraftTypeComboBox.ItemsSource = planes;
+
+                // Ustaw domyślną datę na jutro
+                FlightDatePicker.SelectedDate = DateTime.Now.AddDays(1);
+            } catch (Exception ex) {
+                MessageBox.Show($"Błąd podczas ładowania danych: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SetupTimeComboBox() {
+            // Wypełnij ComboBox z godzinami lotów
+            FlightTimeComboBox.Items.Clear();
+            for (int hour = 0; hour < 24; hour++) {
+                FlightTimeComboBox.Items.Add($"{hour:D2}:00");
+                FlightTimeComboBox.Items.Add($"{hour:D2}:30");
+            }
+            // Domyślnie ustaw na 12:00
+            FlightTimeComboBox.SelectedItem = "12:00";
         }
 
         private void FlightsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -120,21 +170,13 @@ namespace Malash_Airlines {
 
             // Sprawdź, czy użytkownik jest zalogowany
             if (!AppSession.isLoggedIn || AppSession.CurrentUser == null) {
-                var result = MessageBox.Show("Aby dokonać rezerwacji, musisz być zalogowany. Czy chcesz się zalogować?",
+                var result = MessageBox.Show("Aby dokonać rezerwacji, musisz być zalogowany/a. Czy chcesz się zalogować?",
                     "Wymagane logowanie", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes) {
-                    // Zamknij wszystkie okna oprócz logowania
+                    // Otwórz okno logowania
                     loginWindow loginWin = new loginWindow();
-                    this.Close();
-
-                    // Zamykanie wszystkich innych okien poza głównym
-                    foreach (Window window in Application.Current.Windows) {
-                        if (window != Application.Current.MainWindow && window != loginWin) {
-                            window.Close();
-                        }
-                    }
-
+                    this.Close(); // Zamknij to okno
                     loginWin.ShowDialog();
                 }
                 return;
@@ -179,6 +221,70 @@ namespace Malash_Airlines {
                 }
             } catch (Exception ex) {
                 MessageBox.Show($"Błąd podczas tworzenia rezerwacji: {ex.Message}",
+                    "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SendPrivateRequestButton_Click(object sender, RoutedEventArgs e) {
+            // Sprawdź, czy użytkownik jest zalogowany jako klient biznesowy
+            if (!AppSession.isLoggedIn || AppSession.CurrentUser == null ||
+                AppSession.CurrentUser.CustomerType?.ToLower() != "business") {
+                MessageBox.Show("Tylko zalogowani klienci biznesowi mogą składać zapytania o prywatne loty.",
+                    "Brak uprawnień", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Sprawdź, czy wszystkie wymagane pola są wypełnione
+            if (DepartureAirportComboBox.SelectedItem == null ||
+                DestinationAirportComboBox.SelectedItem == null ||
+                !FlightDatePicker.SelectedDate.HasValue ||
+                string.IsNullOrEmpty(FlightTimeComboBox.Text) ||
+                AircraftTypeComboBox.SelectedItem == null) {
+                MessageBox.Show("Proszę wypełnić wszystkie wymagane pola.",
+                    "Brakujące dane", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try {
+                // Przygotuj dane do zapytania
+                int userId = AppSession.CurrentUser.ID;
+                int departureId = ((Airport)DepartureAirportComboBox.SelectedItem).ID;
+                int destinationId = ((Airport)DestinationAirportComboBox.SelectedItem).ID;
+                DateTime flightDate = FlightDatePicker.SelectedDate.Value;
+                string flightTime = FlightTimeComboBox.Text;
+                int planeId = ((Plane)AircraftTypeComboBox.SelectedItem).ID;
+
+                // Dodaj lot z typem "pending_private" (cena będzie ustalona później)
+                int flightId = Database.AddNewFlight(departureId, destinationId, flightDate, flightTime, 0, planeId, "private");
+
+                if (flightId > 0) {
+                    // Dodaj rezerwację ze statusem "pending" i miejscem "FULL" (cały samolot)
+                    int reservationId = Database.AddReservation(userId, flightId, "FULL", 0, "unconfirmed");
+
+                    if (reservationId > 0) {
+                        MessageBox.Show("Zapytanie o prywatny lot zostało złożone pomyślnie. " +
+                            "Zostaniesz poinformowany o decyzji pracownika linii lotniczych.",
+                            "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        // Wyczyść formularz
+                        DepartureAirportComboBox.SelectedIndex = -1;
+                        DestinationAirportComboBox.SelectedIndex = -1;
+                        FlightDatePicker.SelectedDate = DateTime.Now.AddDays(1);
+                        FlightTimeComboBox.SelectedItem = "12:00";
+                        AircraftTypeComboBox.SelectedIndex = -1;
+                        NotesTextBox.Text = string.Empty;
+                    } else {
+                        // Jeśli rezerwacja się nie powiodła, usuń utworzony lot
+                        Database.RemoveFlight(flightId);
+                        MessageBox.Show("Nie udało się złożyć zapytania o prywatny lot. Spróbuj ponownie później.",
+                            "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                } else {
+                    MessageBox.Show("Nie udało się utworzyć zapytania o prywatny lot.",
+                        "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Wystąpił błąd podczas składania zapytania: {ex.Message}",
                     "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

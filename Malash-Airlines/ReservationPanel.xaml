@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="System Rezerwacji Lotów" Height="600" Width="900"
+        Title="System Rezerwacji Lotów" Height="750" Width="900"
         Background="#F5F7FA">
     <Window.Resources>
         <!-- Style dla przycisków -->
@@ -79,122 +79,216 @@
         </Grid>
 
         <!-- Główna zawartość -->
-        <Grid Grid.Row="1" Margin="20,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.5*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
+        <TabControl Grid.Row="1" Name="MainTabControl">
+            <!-- Zakładka 1: Standardowe rezerwacje -->
+            <TabItem Header="Rezerwacja Standardowa">
+                <Grid Margin="20,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- Lewa kolumna - lista lotów -->
-            <Border Grid.Column="0" BorderBrush="#DDE7EE" BorderThickness="1" CornerRadius="8" Background="White">
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <!-- Lewa kolumna - lista lotów -->
+                    <Border Grid.Column="0" BorderBrush="#DDE7EE" BorderThickness="1" CornerRadius="8" Background="White">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Dostępne Loty" FontSize="18" FontWeight="Bold" 
-                               Margin="0,0,0,10" Foreground="#2C3E50"/>
+                            <TextBlock Grid.Row="0" Text="Dostępne Loty" FontSize="18" FontWeight="Bold" 
+                                   Margin="0,0,0,10" Foreground="#2C3E50"/>
 
-                    <ListBox Grid.Row="1" x:Name="FlightsListBox" Margin="0,5" 
-                             SelectionChanged="FlightsListBox_SelectionChanged"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             BorderThickness="0"/>
+                            <ListBox Grid.Row="1" x:Name="FlightsListBox" Margin="0,5" 
+                                 SelectionChanged="FlightsListBox_SelectionChanged"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 BorderThickness="0"/>
 
-                    <Button Grid.Row="2" Content="Odśwież" HorizontalAlignment="Center" Margin="0,10,0,0"
-                            Click="RefreshButton_Click"/>
-                </Grid>
-            </Border>
-
-            <!-- Separator -->
-            <GridSplitter Grid.Column="1" Width="10" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
-                          Background="Transparent"/>
-
-            <!-- Prawa kolumna - szczegóły lotu i rezerwacji -->
-            <Border Grid.Column="2" BorderBrush="#DDE7EE" BorderThickness="1" CornerRadius="8" Background="White">
-                <Grid Margin="15">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Nagłówek szczegółów -->
-                    <TextBlock Grid.Row="0" Text="Szczegóły Lotu" FontSize="18" FontWeight="Bold" 
-                               Margin="0,0,0,15" Foreground="#2C3E50"/>
-
-                    <!-- Panel szczegółów lotu -->
-                    <StackPanel Grid.Row="1" x:Name="FlightDetailsPanel" Visibility="Collapsed">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Lewa kolumna szczegółów -->
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Wylot z:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="DepartureTextBlock" Style="{StaticResource valueStyle}"/>
-
-                                <TextBlock Text="Data:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="DateTextBlock" Style="{StaticResource valueStyle}"/>
-
-                                <TextBlock Text="Samolot:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="PlaneTextBlock" Style="{StaticResource valueStyle}"/>
-                            </StackPanel>
-
-                            <!-- Prawa kolumna szczegółów -->
-                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                <TextBlock Text="Przylot do:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="DestinationTextBlock" Style="{StaticResource valueStyle}"/>
-
-                                <TextBlock Text="Godzina:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="TimeTextBlock" Style="{StaticResource valueStyle}"/>
-
-                                <TextBlock Text="Cena:" Style="{StaticResource labelStyle}"/>
-                                <TextBlock x:Name="PriceTextBlock" Style="{StaticResource valueStyle}"/>
-                            </StackPanel>
+                            <Button Grid.Row="2" Content="Odśwież" HorizontalAlignment="Center" Margin="0,10,0,0"
+                                Click="RefreshButton_Click"/>
                         </Grid>
-                    </StackPanel>
+                    </Border>
 
-                    <!-- Linia separująca -->
-                    <Border Grid.Row="2" Height="1" Background="#DDE7EE" Margin="0,10"/>
+                    <!-- Separator -->
+                    <GridSplitter Grid.Column="1" Width="10" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
+                              Background="Transparent"/>
 
-                    <!-- Panel wyboru miejsca -->
-                    <StackPanel Grid.Row="3" Margin="0,10">
-                        <TextBlock Text="Rezerwacja" FontSize="18" FontWeight="Bold" 
+                    <!-- Prawa kolumna - szczegóły lotu i rezerwacji -->
+                    <Border Grid.Column="2" BorderBrush="#DDE7EE" BorderThickness="1" CornerRadius="8" Background="White">
+                        <Grid Margin="15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Nagłówek szczegółów -->
+                            <TextBlock Grid.Row="0" Text="Szczegóły Lotu" FontSize="18" FontWeight="Bold" 
                                    Margin="0,0,0,15" Foreground="#2C3E50"/>
 
-                        <Grid>
+                            <!-- Panel szczegółów lotu -->
+                            <StackPanel Grid.Row="1" x:Name="FlightDetailsPanel" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Lewa kolumna szczegółów -->
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Wylot z:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="DepartureTextBlock" Style="{StaticResource valueStyle}"/>
+
+                                        <TextBlock Text="Data:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="DateTextBlock" Style="{StaticResource valueStyle}"/>
+
+                                        <TextBlock Text="Samolot:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="PlaneTextBlock" Style="{StaticResource valueStyle}"/>
+                                    </StackPanel>
+
+                                    <!-- Prawa kolumna szczegółów -->
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                        <TextBlock Text="Przylot do:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="DestinationTextBlock" Style="{StaticResource valueStyle}"/>
+
+                                        <TextBlock Text="Godzina:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="TimeTextBlock" Style="{StaticResource valueStyle}"/>
+
+                                        <TextBlock Text="Cena:" Style="{StaticResource labelStyle}"/>
+                                        <TextBlock x:Name="PriceTextBlock" Style="{StaticResource valueStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Linia separująca -->
+                            <Border Grid.Row="2" Height="1" Background="#DDE7EE" Margin="0,10"/>
+
+                            <!-- Panel wyboru miejsca -->
+                            <StackPanel Grid.Row="3" Margin="0,10">
+                                <TextBlock Text="Rezerwacja" FontSize="18" FontWeight="Bold" 
+                                       Margin="0,0,0,15" Foreground="#2C3E50"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="Wybrane miejsce:" Style="{StaticResource labelStyle}" 
+                                          VerticalAlignment="Center"/>
+                                    <TextBox Grid.Column="1" x:Name="SeatNumberTextBox" Margin="10,5" IsReadOnly="True"/>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15">
+                                    <Button x:Name="SelectSeatButton" Content="Wybierz miejsce" Width="150" IsEnabled="False"
+                                        Click="SelectSeatButton_Click"/>
+                                    <Button x:Name="ViewMapButton" Content="Zobacz mapę" Width="150" IsEnabled="False"
+                                        Click="ViewMapButton_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Przycisk rezerwacji -->
+                            <Button Grid.Row="4" x:Name="BookButton" Content="Zarezerwuj Lot" 
+                                FontSize="16" Height="45" HorizontalAlignment="Center" Width="200"
+                                IsEnabled="False" Click="BookButton_Click"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Zakładka 2: Prywatny lot dla biznesu -->
+            <TabItem Header="Lot Biznesowy" x:Name="PrivateTabItem">
+                <Border BorderBrush="#DDE7EE" BorderThickness="1" CornerRadius="8" Background="White" Margin="20,10">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Nagłówek -->
+                        <TextBlock Grid.Row="0" Text="Rezerwacja Prywatnego Lotu" FontSize="22" 
+                                   FontWeight="Bold" Margin="0,0,0,20" Foreground="#2C3E50" 
+                                   HorizontalAlignment="Center"/>
+
+                        <!-- Formularz zapytania o lot -->
+                        <Grid Grid.Row="1" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Wybrane miejsce:" Style="{StaticResource labelStyle}" 
-                                      VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="1" x:Name="SeatNumberTextBox" Margin="10,5" IsReadOnly="True"/>
+                            <!-- Lotnisko wylotu -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Lotnisko wylotu:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Center"
+                                       Margin="0,15,10,15"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1" x:Name="DepartureAirportComboBox" 
+                                      Margin="0,15,0,15" Height="35" DisplayMemberPath="Name"/>
+
+                            <!-- Lotnisko przylotu -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Lotnisko przylotu:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Center"
+                                       Margin="0,15,10,15"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1" x:Name="DestinationAirportComboBox" 
+                                      Margin="0,15,0,15" Height="35" DisplayMemberPath="Name"/>
+
+                            <!-- Data lotu -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Data lotu:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Center"
+                                       Margin="0,15,10,15"/>
+                            <DatePicker Grid.Row="2" Grid.Column="1" x:Name="FlightDatePicker" 
+                                        Margin="0,15,0,15" Height="35"/>
+
+                            <!-- Godzina lotu -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Godzina lotu:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Center"
+                                       Margin="0,15,10,15"/>
+                            <ComboBox Grid.Row="3" Grid.Column="1" x:Name="FlightTimeComboBox" 
+                                      Margin="0,15,0,15" Height="35"/>
+
+                            <!-- Typ samolotu -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Typ samolotu:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Center"
+                                       Margin="0,15,10,15"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1" x:Name="AircraftTypeComboBox" 
+                                      Margin="0,15,0,15" Height="35" DisplayMemberPath="Name"/>
+
+                            <!-- Dodatkowe uwagi -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Dodatkowe uwagi:" 
+                                       Style="{StaticResource labelStyle}" VerticalAlignment="Top"
+                                       Margin="0,15,10,15"/>
+                            <TextBox Grid.Row="5" Grid.Column="1" x:Name="NotesTextBox" 
+                                     Margin="0,15,0,15" Height="80" TextWrapping="Wrap" 
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+
+                            <!-- Informacja o cenie -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" 
+                                       Text="Cena zostanie ustalona po weryfikacji przez pracownika linii lotniczych." 
+                                       Margin="0,15,0,10" TextWrapping="Wrap" Foreground="#555555" 
+                                       HorizontalAlignment="Center"/>
                         </Grid>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15">
-                            <Button x:Name="SelectSeatButton" Content="Wybierz miejsce" Width="150" IsEnabled="False"
-                                    Click="SelectSeatButton_Click"/>
-                            <Button x:Name="ViewMapButton" Content="Zobacz mapę" Width="150" IsEnabled="False"
-                                    Click="ViewMapButton_Click"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Przycisk rezerwacji -->
-                    <Button Grid.Row="4" x:Name="BookButton" Content="Zarezerwuj Lot" 
-                            FontSize="16" Height="45" HorizontalAlignment="Center" Width="200"
-                            IsEnabled="False" Click="BookButton_Click"/>
-                </Grid>
-            </Border>
-        </Grid>
+                        <!-- Przycisk wysłania zapytania -->
+                        <Button Grid.Row="2" Content="Wyślij zapytanie" 
+                                x:Name="SendPrivateRequestButton" Click="SendPrivateRequestButton_Click"
+                                Width="250" Height="50" FontSize="16" Margin="0,20,0,0"/>
+                    </Grid>
+                </Border>
+            </TabItem>
+        </TabControl>
 
         <!-- Stopka -->
         <Border Grid.Row="2" Background="#DDE7EE">
