@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using QuestPDF.Infrastructure;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using pdfColor = QuestPDF.Infrastructure.Color;
+using Color = System.Windows.Media.Color;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace Malash_Airlines
 {
@@ -26,13 +31,21 @@ namespace Malash_Airlines
             //layout.Show();
             //Database db = new Database();
             //MessageBox.Show(db.GetAirports().Count().ToString());
-            //mail_functions.SendOneTimePassword("kacper.zaluska7@gmail.com");
+            QuestPDF.Settings.License = LicenseType.Community;
+            //PDFGenerationService pdf = new PDFGenerationService();
+            //var ticketInfo = new FlightTicketInfo
+            //{
+            //    PassengerName = "Jan Kowalski",
+            //    FlightNumber = "LO1234",
+            //    SeatNumber = "18A"
+            //};
 
+            //pdf.GenerateDocuments(ticketInfo);
         }
 
         private void loginButtonClick(object sender, RoutedEventArgs e)
         {
-            if (loginButton.Content.ToString() == "Log In")
+            if (!AppSession.isLoggedIn)
             {
                 loginWindow window = new loginWindow();
                 window.Show();
@@ -40,6 +53,13 @@ namespace Malash_Airlines
             }
             else
             {
+                // Show the context menu
+                var button = sender as Button;
+                if (button != null)
+                {
+                    //button.ContextMenu.PlacementTarget = button;
+                    //button.ContextMenu.IsOpen = true;
+                }
                 Process.Start(Process.GetCurrentProcess().MainModule.FileName);
                 Application.Current.Shutdown();
             }
@@ -96,7 +116,29 @@ namespace Malash_Airlines
                 Grid.SetColumn(etykieta, 2); // Umieszczenie etykiety w pierwszej kolumnie Grid
                 windowGrid.Children.Add(etykieta); // MojGrid to nazwa elementu Grid w XAML
 
+                // Update category 4 visibility based on user role
+                UpdateCategoryVisibility();
             }
+        }
+
+        private void UpdateCategoryVisibility()
+        {
+            // Check if user is logged in and has appropriate role for category 4
+            if (AppSession.isLoggedIn && (AppSession.userRole == "employee" || AppSession.userRole == "admin"))
+            {
+                category4Button.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                category4Button.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Category4Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the worker panel when category 4 is clicked
+            WorkerPanel panel = new WorkerPanel();
+            panel.Show();
         }
 
         private void LoadFlights()

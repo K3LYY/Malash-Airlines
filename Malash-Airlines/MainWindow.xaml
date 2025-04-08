@@ -121,7 +121,8 @@
             <Button Grid.Column="1" Content="KAT1" Width="Auto" Margin="5"/>
             <Button Grid.Column="2" Content="KAT2" Width="Auto" Margin="5"/>
             <Button Grid.Column="3" Content="KAT3" Width="Auto" Margin="5"/>
-            <Button Grid.Column="4" Content="KAT4" Width="Auto" Margin="5"/>
+            <Button Grid.Column="4" Content="Panel Pracownika" Width="Auto" Margin="5" x:Name="category4Button" 
+                    Click="Category4Button_Click" Visibility="Collapsed"/>
 
                 <!-- Przycisk Log In -->
             <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick" Name="loginButton"/>
