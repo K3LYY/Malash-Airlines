@@ -373,7 +373,7 @@ namespace Malash_Airlines
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            UserProfile userProfile = new UserProfile();
+            UserProfile userProfile = new UserProfile(AppSession.CurrentUser);
             userProfile.Show();
             this.Close();
         }
