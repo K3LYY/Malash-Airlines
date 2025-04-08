@@ -116,7 +116,29 @@ namespace Malash_Airlines
                 Grid.SetColumn(etykieta, 2); // Umieszczenie etykiety w pierwszej kolumnie Grid
                 windowGrid.Children.Add(etykieta); // MojGrid to nazwa elementu Grid w XAML
 
+                // Update category 4 visibility based on user role
+                UpdateCategoryVisibility();
             }
+        }
+
+        private void UpdateCategoryVisibility()
+        {
+            // Check if user is logged in and has appropriate role for category 4
+            if (AppSession.isLoggedIn && (AppSession.userRole == "employee" || AppSession.userRole == "admin"))
+            {
+                category4Button.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                category4Button.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Category4Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the worker panel when category 4 is clicked
+            WorkerPanel panel = new WorkerPanel();
+            panel.Show();
         }
 
         private void LoadFlights()

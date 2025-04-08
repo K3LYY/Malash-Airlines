@@ -22,6 +22,23 @@ namespace Malash_Airlines {
             InitializeComponent();
             InitializeCollections();
             LoadAllData();
+            
+            // Check if user is admin to show/hide the role management tab
+            UpdateRoleManagementTabVisibility();
+        }
+
+        private void UpdateRoleManagementTabVisibility() {
+            // Get the Role Management tab (the last tab in this case)
+            TabItem roleManagementTab = MainTabControl.Items[MainTabControl.Items.Count - 1] as TabItem;
+            
+            if (roleManagementTab != null) {
+                // Show the tab only for admin users
+                if (AppSession.isLoggedIn && AppSession.userRole == "admin") {
+                    roleManagementTab.Visibility = Visibility.Visible;
+                } else {
+                    roleManagementTab.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         private ObservableCollection<User> businessClients;
