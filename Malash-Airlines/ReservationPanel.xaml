@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Malash_Airlines"
         mc:Ignorable="d"
-        Title="System Rezerwacji Lotów" Height="750" Width="900"
+        Title="System Rezerwacji Lotów" Height="900" Width="900"
         Background="#F5F7FA">
     <Window.Resources>
         <!-- Style dla przycisków -->
