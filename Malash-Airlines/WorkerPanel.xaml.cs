@@ -304,13 +304,36 @@ namespace Malash_Airlines {
         private void ConfirmReservationButton_Click(object sender, RoutedEventArgs e) {
             if (PendingReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
                 try {
-                    bool success = Database.UpdateReservation(selectedReservation.ReservationID, "confirmed");
-                    if (success) {
-                        MessageBox.Show("Reservation confirmed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Aktualizujemy status rezerwacji na "pending"
+                    bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
+                    if (updateSuccess) {
+                        // Pobieramy dane lotu, aby ustalić wartość faktury
+                        Flight flight = Database.GetFlightById(selectedReservation.FlightID);
+                        if (flight == null) {
+                            throw new ApplicationException("Associated flight not found.");
+                        }
+
+                        // Tworzymy nową fakturę
+                        Invoice invoice = new Invoice {
+                            ReservationID = selectedReservation.ReservationID,
+                            Amount = flight.Price,
+                            IssueDate = DateTime.Now,
+                            DueDate = DateTime.Now.AddDays(7),
+                            Status = "unpaid",
+                            InvoiceNumber = "", // Jeśli nie podamy numeru, metoda AddInvoice wygeneruje unikalny numer
+                            Notes = $"Invoice for reservation ID {selectedReservation.ReservationID}"
+                        };
+
+                        int invoiceId = Database.AddInvoice(invoice);
+                        if (invoiceId <= 0) {
+                            throw new ApplicationException("Invoice creation failed.");
+                        }
+
+                        MessageBox.Show("Reservation marked pending and invoice created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                         LoadPendingReservations();
                         LoadReservations();
                     } else {
-                        MessageBox.Show("Failed to confirm reservation.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Failed to update reservation status.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 } catch (Exception ex) {
                     MessageBox.Show($"Error confirming reservation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -319,6 +342,7 @@ namespace Malash_Airlines {
                 MessageBox.Show("Please select a reservation to confirm.", "Selection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
 
         private void RefreshPendingReservationsButton_Click(object sender, RoutedEventArgs e) {
             LoadPendingReservations();

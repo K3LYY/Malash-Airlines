@@ -117,15 +117,16 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
                     string query = @"
-                    SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
-                           F.Date, F.Time, F.Price, P.Name AS Plane
-                    FROM flights F
-                    JOIN airports A1 ON F.Departure = A1.ID
-                    JOIN airports A2 ON F.Destination = A2.ID
-                    JOIN planes P ON F.PlaneID = P.ID
-                    WHERE F.Date >= CURDATE() OR (F.Date = CURDATE() AND F.Time >= CURTIME())
-                    ORDER BY F.Date, F.Time
-                    LIMIT @Limit;";
+            SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
+                   F.Date, F.Time, F.Price, F.FlightType, P.Name AS Plane
+            FROM flights F
+            JOIN airports A1 ON F.Departure = A1.ID
+            JOIN airports A2 ON F.Destination = A2.ID
+            JOIN planes P ON F.PlaneID = P.ID
+            WHERE (F.Date >= CURDATE() OR (F.Date = CURDATE() AND F.Time >= CURTIME()))
+                  AND F.FlightType = 'public'
+            ORDER BY F.Date, F.Time
+            LIMIT @Limit;";
 
                     using (var command = new MySqlCommand(query, connection)) {
                         command.Parameters.AddWithValue("@Limit", limit);
