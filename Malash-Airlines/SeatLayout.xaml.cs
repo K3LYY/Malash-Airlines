@@ -122,8 +122,8 @@ namespace Malash_Airlines {
                 selectedSeat.Content = "✓";
                 SelectedSeatNumber = seatInfo.SeatNumber;
 
-                MessageBox.Show($"Selected seat: {seatInfo.SeatNumber} ({(seatInfo.IsFirstClass ? "First Class" : "Economy")})",
-                    "Seat Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Ustawienie SeatInfo dla okna rezerwacji
+                SelectedSeatInfo = seatInfo;
             }
         }
 

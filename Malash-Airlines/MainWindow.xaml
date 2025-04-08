@@ -118,7 +118,7 @@
             <Image Grid.Column="0" Source="/assets/logo.png" Height="100" Width="90" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
             <!-- Kategorie -->
-            <Button Grid.Column="1" Content="KAT1" Width="Auto" Margin="5"/>
+            <Button Grid.Column="1" Content="KAT1" Width="Auto" Margin="5" Click="OpenReservationPanel_Click"/>
             <Button Grid.Column="2" Content="KAT2" Width="Auto" Margin="5"/>
             <Button Grid.Column="3" Content="KAT3" Width="Auto" Margin="5"/>
             <Button Grid.Column="4" Content="Panel Pracownika" Width="Auto" Margin="5" x:Name="category4Button" 
