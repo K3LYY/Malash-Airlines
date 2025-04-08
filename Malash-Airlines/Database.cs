@@ -34,7 +34,7 @@ namespace Malash_Airlines {
 
                     using (var command = new MySqlCommand(query, connection))
                     using (var reader = command.ExecuteReader()) {
-                        
+
                         while (reader.Read()) {
                             flights.Add(new Flight {
                                 FlightDetails = $"{Convert.ToInt32(reader["ID"])} : {reader["Departure"]} -> {reader["Destination"]} dnia {reader["Date"].ToString().Substring(0, 10)} o {reader["Time"]}",
@@ -50,7 +50,7 @@ namespace Malash_Airlines {
                         }
                     }
                 } catch (Exception ex) {
-                    throw new ApplicationException("Error retrieving available flights: "+ex.Message, ex);
+                    throw new ApplicationException("Error retrieving available flights: " + ex.Message, ex);
                 }
             }
 
@@ -84,33 +84,25 @@ namespace Malash_Airlines {
             return airports;
         }
 
-        public static List<Plane> GetPlanes()
-        {
+        public static List<Plane> GetPlanes() {
             var planes = new List<Plane>();
 
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                try
-                {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
                     connection.Open();
                     string query = "SELECT ID, Name, SeatsLayout FROM planes ORDER BY ID;";
 
                     using (var command = new MySqlCommand(query, connection))
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            planes.Add(new Plane
-                            {
+                    using (var reader = command.ExecuteReader()) {
+                        while (reader.Read()) {
+                            planes.Add(new Plane {
                                 ID = Convert.ToInt32(reader["ID"]),
                                 Name = reader["Name"].ToString(),
                                 SeatsLayout = reader["SeatsLayout"].ToString()
                             });
                         }
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     throw new ApplicationException("Error retrieving planes", ex);
                 }
             }
@@ -118,14 +110,11 @@ namespace Malash_Airlines {
             return planes;
         }
 
-        public static List<Flight> GetSoonestFlights(int limit = 5)
-        {
+        public static List<Flight> GetSoonestFlights(int limit = 5) {
             var flights = new List<Flight>();
 
-            using (var connection = new MySqlConnection(_connectionString))
-            {
-                try
-                {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
                     connection.Open();
                     string query = @"
                     SELECT F.ID, A1.Name AS Departure, A2.Name AS Destination, 
@@ -138,15 +127,11 @@ namespace Malash_Airlines {
                     ORDER BY F.Date, F.Time
                     LIMIT @Limit;";
 
-                    using (var command = new MySqlCommand(query, connection))
-                    {
+                    using (var command = new MySqlCommand(query, connection)) {
                         command.Parameters.AddWithValue("@Limit", limit);
-                        using (var reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                flights.Add(new Flight
-                                {
+                        using (var reader = command.ExecuteReader()) {
+                            while (reader.Read()) {
+                                flights.Add(new Flight {
                                     ID = Convert.ToInt32(reader["ID"]),
                                     Departure = reader["Departure"].ToString(),
                                     Destination = reader["Destination"].ToString(),
@@ -158,9 +143,7 @@ namespace Malash_Airlines {
                             }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     throw new ApplicationException("Error retrieving soonest flights", ex);
                 }
             }
@@ -230,13 +213,13 @@ namespace Malash_Airlines {
                             throw new ArgumentException("User does not exist");
                         }
                     }
-                    
+
                     // Sprawdź, czy lot nie jest prywatny
                     string checkFlightTypeQuery = "SELECT FlightType FROM flights WHERE ID = @FlightID";
                     using (var checkFlightTypeCommand = new MySqlCommand(checkFlightTypeQuery, connection)) {
                         checkFlightTypeCommand.Parameters.AddWithValue("@FlightID", flightId);
                         var flightType = checkFlightTypeCommand.ExecuteScalar()?.ToString();
-                        
+
                         if (flightType?.ToLower() == "private") {
                             throw new ArgumentException("Cannot reserve seats on private flights");
                         }
@@ -656,7 +639,7 @@ namespace Malash_Airlines {
                 }
             }
         }
-        
+
         public static string GetUserCustomerType(int userId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {
@@ -710,6 +693,229 @@ namespace Malash_Airlines {
             return null;
         }
 
+        public static int AddInvoice(Invoice invoice) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+
+                    // Check if reservation exists
+                    string checkReservationQuery = "SELECT COUNT(*) FROM reservations WHERE ID = @ReservationID";
+                    using (var checkCommand = new MySqlCommand(checkReservationQuery, connection)) {
+                        checkCommand.Parameters.AddWithValue("@ReservationID", invoice.ReservationID);
+                        int reservationExists = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                        if (reservationExists == 0) {
+                            throw new ArgumentException("Rezerwacja nie istnieje");
+                        }
+                    }
+
+        
+    }
+
+                    // Generate a unique invoice number (format: INV-YYYYMMDD-XXXX) if not provided
+                    string invoiceNumber = invoice.InvoiceNumber;
+                    if (string.IsNullOrEmpty(invoiceNumber)) {
+                        invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+
+                        // Check if invoice number is unique
+                        string checkInvoiceQuery = "SELECT COUNT(*) FROM invoices WHERE InvoiceNumber = @InvoiceNumber";
+                        using (var checkCommand = new MySqlCommand(checkInvoiceQuery, connection)) {
+                            checkCommand.Parameters.AddWithValue("@InvoiceNumber", invoiceNumber);
+                            while (Convert.ToInt32(checkCommand.ExecuteScalar()) > 0) {
+                                // If not unique, generate a new one
+                                invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+                                checkCommand.Parameters["@InvoiceNumber"].Value = invoiceNumber;
+                            }
+                        }
+                    }
+
+                    // Insert new invoice
+                    string query = @"
+                INSERT INTO invoices (ReservationID, Amount, Status, IssueDate, DueDate, InvoiceNumber, Notes)
+                VALUES (@ReservationID, @Amount, @Status, @IssueDate, @DueDate, @InvoiceNumber, @Notes);
+                SELECT LAST_INSERT_ID();";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@ReservationID", invoice.ReservationID);
+                        command.Parameters.AddWithValue("@Amount", invoice.Amount);
+                        command.Parameters.AddWithValue("@Status", string.IsNullOrEmpty(invoice.Status) ? "unpaid" : invoice.Status);
+                        command.Parameters.AddWithValue("@IssueDate", invoice.IssueDate.ToString("yyyy-MM-dd"));
+                        command.Parameters.AddWithValue("@DueDate", invoice.DueDate.ToString("yyyy-MM-dd"));
+                        command.Parameters.AddWithValue("@InvoiceNumber", invoiceNumber);
+                        command.Parameters.AddWithValue("@Notes", invoice.Notes ?? (object)DBNull.Value);
+
+                        return Convert.ToInt32(command.ExecuteScalar());
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Błąd dodawania faktury: {ex.Message}", ex);
+                }
+            }
+        }
+
+        public static bool RemoveInvoice(int invoiceId) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = "DELETE FROM invoices WHERE ID = @InvoiceID;";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@InvoiceID", invoiceId);
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Błąd usuwania faktury: {ex.Message}", ex);
+                }
+            }
+        }
+
+        public static bool UpdateInvoice(Invoice invoice) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+
+                    // Build dynamic update query
+                    var queryBuilder = new System.Text.StringBuilder("UPDATE invoices SET ");
+                    var parameters = new List<string>();
+
+                    // Check which properties should be updated
+                    if (invoice.Amount > 0) {
+                        parameters.Add("Amount = @Amount");
+                    }
+
+                    if (!string.IsNullOrEmpty(invoice.Status)) {
+                        parameters.Add("Status = @Status");
+                    }
+
+                    if (invoice.DueDate != default(DateTime)) {
+                        parameters.Add("DueDate = @DueDate");
+                    }
+
+                    // Add optional PaymentDate
+                    if (invoice.PaymentDate != default(DateTime)) {
+                        parameters.Add("PaymentDate = @PaymentDate");
+                    }
+
+                    if (invoice.Notes != null) {
+                        parameters.Add("Notes = @Notes");
+                    }
+
+                    // If no parameters provided, return true without making any changes
+                    if (parameters.Count == 0) {
+                        return true;
+                    }
+
+                    queryBuilder.Append(string.Join(", ", parameters));
+                    queryBuilder.Append(" WHERE ID = @InvoiceID;");
+
+                    using (var command = new MySqlCommand(queryBuilder.ToString(), connection)) {
+                        command.Parameters.AddWithValue("@InvoiceID", invoice.ID);
+
+                        if (invoice.Amount > 0) {
+                            command.Parameters.AddWithValue("@Amount", invoice.Amount);
+                        }
+
+                        if (!string.IsNullOrEmpty(invoice.Status)) {
+                            command.Parameters.AddWithValue("@Status", invoice.Status);
+                        }
+
+                        if (invoice.DueDate != default(DateTime)) {
+                            command.Parameters.AddWithValue("@DueDate", invoice.DueDate.ToString("yyyy-MM-dd"));
+                        }
+
+                        if (invoice.PaymentDate != default(DateTime)) {
+                            command.Parameters.AddWithValue("@PaymentDate", invoice.PaymentDate.ToString("yyyy-MM-dd"));
+                        }
+
+                        if (invoice.Notes != null) {
+                            command.Parameters.AddWithValue("@Notes", invoice.Notes);
+                        }
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Błąd aktualizacji faktury: {ex.Message}", ex);
+                }
+            }
+        }
+
+        // Dodanie metody do pobierania faktur
+        public static List<Invoice> GetInvoices(int? reservationId = null) {
+            var invoices = new List<Invoice>();
+
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = @"
+                SELECT ID, ReservationID, Amount, Status, IssueDate, DueDate, PaymentDate, InvoiceNumber, Notes 
+                FROM invoices 
+                WHERE 1=1 " + (reservationId.HasValue ? "AND ReservationID = @ReservationID " : "") +
+                        "ORDER BY IssueDate DESC;";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        if (reservationId.HasValue)
+                            command.Parameters.AddWithValue("@ReservationID", reservationId.Value);
+
+                        using (var reader = command.ExecuteReader()) {
+                            while (reader.Read()) {
+                                invoices.Add(new Invoice {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    ReservationID = Convert.ToInt32(reader["ReservationID"]),
+                                    Amount = Convert.ToDecimal(reader["Amount"]),
+                                    Status = reader["Status"].ToString(),
+                                    IssueDate = Convert.ToDateTime(reader["IssueDate"]),
+                                    DueDate = Convert.ToDateTime(reader["DueDate"]),
+                                    PaymentDate = reader["PaymentDate"] != DBNull.Value ? Convert.ToDateTime(reader["PaymentDate"]) : default(DateTime),
+                                    InvoiceNumber = reader["InvoiceNumber"].ToString(),
+                                    Notes = reader["Notes"] != DBNull.Value ? reader["Notes"].ToString() : null
+                                });
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException("Błąd pobierania faktur", ex);
+                }
+            }
+
+            return invoices;
+        }
+
+        // Metoda pomocnicza do pobierania pojedynczej faktury
+        public static Invoice GetInvoiceById(int invoiceId) {
+            using (var connection = new MySqlConnection(_connectionString)) {
+                try {
+                    connection.Open();
+                    string query = @"
+                SELECT ID, ReservationID, Amount, Status, IssueDate, DueDate, PaymentDate, InvoiceNumber, Notes 
+                FROM invoices 
+                WHERE ID = @InvoiceID;";
+
+                    using (var command = new MySqlCommand(query, connection)) {
+                        command.Parameters.AddWithValue("@InvoiceID", invoiceId);
+                        using (var reader = command.ExecuteReader()) {
+                            if (reader.Read()) {
+                                return new Invoice {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    ReservationID = Convert.ToInt32(reader["ReservationID"]),
+                                    Amount = Convert.ToDecimal(reader["Amount"]),
+                                    Status = reader["Status"].ToString(),
+                                    IssueDate = Convert.ToDateTime(reader["IssueDate"]),
+                                    DueDate = Convert.ToDateTime(reader["DueDate"]),
+                                    PaymentDate = reader["PaymentDate"] != DBNull.Value ? Convert.ToDateTime(reader["PaymentDate"]) : default(DateTime),
+                                    InvoiceNumber = reader["InvoiceNumber"].ToString(),
+                                    Notes = reader["Notes"] != DBNull.Value ? reader["Notes"].ToString() : null
+                                };
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    throw new ApplicationException($"Błąd pobierania faktury o ID {invoiceId}: {ex.Message}", ex);
+                }
+            }
+            return null;
+        }
+
         public static bool UpdateUser(int userId, string name, string email)
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -736,45 +942,56 @@ namespace Malash_Airlines {
             }
         }
     }
+        public class Flight {
+            public string FlightDetails { get; set; }
+            public int ID { get; set; }
+            public string Departure { get; set; }
+            public string Destination { get; set; }
+            public DateTime Date { get; set; }
+            public string Time { get; set; }
+            public decimal Price { get; set; }
+            public string Plane { get; set; }
+            public string FlightType { get; set; }
+        }
 
-    public class Flight {
-        public string FlightDetails { get; set; }
-        public int ID { get; set; }
-        public string Departure { get; set; }
-        public string Destination { get; set; }
-        public DateTime Date { get; set; }
-        public string Time { get; set; }
-        public decimal Price { get; set; }
-        public string Plane { get; set; }
-        public string FlightType { get; set; }
-    }
+        public class Airport {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public string Location { get; set; }
+            public int GatesCount { get; set; }
+        }
 
-    public class Airport {
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public string Location { get; set; }
-        public int GatesCount { get; set; }
-    }
+        public class Plane {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public string SeatsLayout { get; set; }
+        }
 
-    public class Plane {
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public string SeatsLayout { get; set; }
-    }
+        public class User {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Role { get; set; }
+            public string CustomerType { get; set; }
+        }
 
-    public class User {
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Role { get; set; }
-        public string CustomerType { get; set; }
-    }
+        public class Reservation {
+            public int ID { get; set; }
+            public int UserID { get; set; }
+            public int FlightID { get; set; }
+            public string SeatNumber { get; set; }
+            public string Status { get; set; }
+        }
 
-    public class Reservation {
-        public int ID { get; set; }
-        public int UserID { get; set; }
-        public int FlightID { get; set; }
-        public string SeatNumber { get; set; }
-        public string Status { get; set; }
+        public class Invoice {
+            public int ID { get; set; }
+            public int ReservationID { get; set; }
+            public decimal Amount { get; set; }
+            public string Status { get; set; }
+            public DateTime IssueDate { get; set; }
+            public DateTime DueDate { get; set; }
+            public DateTime PaymentDate { get; set; }
+            public string InvoiceNumber { get; set; }
+            public string Notes { get; set; }
+        }
     }
-}

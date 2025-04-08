@@ -88,10 +88,15 @@ namespace Malash_Airlines
             }
             UpdateLoginButtonVisibility();
         }
-        
 
-    
-        
+
+        private void Category1Button_Click(object sender, RoutedEventArgs e) {
+            // Otwórz okno rezerwacji
+            ReservationPanel reservationPanel = new ReservationPanel();
+            reservationPanel.Show();
+        }
+
+
 
         public void Timer_Tick(object sender, EventArgs e)
         {
