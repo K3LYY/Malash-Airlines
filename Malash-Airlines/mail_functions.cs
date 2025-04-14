@@ -4,14 +4,12 @@ using System.Net.Mail;
 using System.IO;
 using DotNetEnv;
 using System.Windows;
-using iText.Layout.Properties;
-using static System.Net.Mime.MediaTypeNames;
-using System.Windows.Media.Media3D;
 
 namespace Malash_Airlines {
     internal class mail_functions {
         static mail_functions() {
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
+            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
             Env.Load(envPath);
         }
 
@@ -25,7 +23,7 @@ namespace Malash_Airlines {
         }
 
         private static string lastCode = "";
-
+        //właściwości CSS aby dane zawarte w mailu były czytelne i wyświetlane poprawnie
         private static string styleMail = """
         body {
             font-family: Arial, sans-serif;
@@ -98,7 +96,7 @@ namespace Malash_Airlines {
             margin-top: 25px;
         }
         """;
-
+        //struktura maila z jednorazowym kodem dostępu w HTML, który wysyłany jest do użytkownika
         private static string GetMailReadyPassword(string oneTimeCode) {
             string mail = """
             <!DOCTYPE html>
@@ -142,8 +140,9 @@ namespace Malash_Airlines {
 
             return mail.Replace("{{CODE}}", oneTimeCode).Replace("{{STYLE}}", styleMail);
         }
-
+        //generowanie jednorazowego kodu do logowania
         public static string SendOneTimePassword(string email) {
+            lastCode = oneTimePassword;
             string oneTimePassword = GenerateOneTimePassword();
             try {
                 string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
@@ -233,7 +232,6 @@ namespace Malash_Airlines {
                 Console.WriteLine($"Błąd podczas wysyłania potwierdzenia rezerwacji: {ex.Message}");
             }
         }
-
         public static void SendReservationDocuments(string email, Reservation reservation, User user, Flight flight) {
             try {
                 string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
@@ -425,6 +423,7 @@ namespace Malash_Airlines {
             } catch (Exception ex) {
                 Console.WriteLine($"Błąd podczas wysyłania faktury: {ex.Message}");
             }
+        }
         }
     }
 }

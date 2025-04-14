@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 namespace Malash_Airlines {
+    //okienko dialogowe do wpisywania ceny lotu biznesowego po zatwierdzeniu rezerwacji
     public class InputDialog : Window {
         private TextBox responseTextBox;
 

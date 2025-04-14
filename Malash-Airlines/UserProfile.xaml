@@ -11,7 +11,6 @@
         Background="#F5F7FA">
 
     <Window.Resources>
-        <!-- Style for labels -->
         <Style x:Key="profileLabels" TargetType="Label">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="#2C3E50"/>
@@ -20,7 +19,6 @@
             <Setter Property="Margin" Value="0,10,0,5"/>
         </Style>
 
-        <!-- Style for text boxes -->
         <Style x:Key="profileTextBoxes" TargetType="TextBox">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Padding" Value="10,5"/>
@@ -30,7 +28,6 @@
             <Setter Property="Height" Value="40"/>
         </Style>
 
-        <!-- Style for buttons -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
@@ -40,7 +37,6 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Gradient for button background -->
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -71,7 +67,6 @@
             </Style.Resources>
         </Style>
 
-        <!-- Style for tab headers -->
         <Style TargetType="TabItem">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Padding" Value="15,8"/>
@@ -88,7 +83,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Style for DataGrid -->
         <Style TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="IsReadOnly" Value="True"/>
@@ -100,7 +94,6 @@
             <Setter Property="VerticalGridLinesBrush" Value="#E0E0E0"/>
         </Style>
 
-        <!-- Style for DataGrid column headers -->
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="#4682B4"/>
             <Setter Property="Foreground" Value="White"/>
@@ -112,38 +105,26 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
-            <!-- Header -->
             <RowDefinition Height="*"/>
-            <!-- Content -->
             <RowDefinition Height="50"/>
-            <!-- Footer -->
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Grid Grid.Row="0" Background="#DDE7EE">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
-                <!-- Logo -->
                 <ColumnDefinition Width="*"/>
-                <!-- Title -->
                 <ColumnDefinition Width="150"/>
-                <!-- Back button -->
             </Grid.ColumnDefinitions>
 
-            <!-- Logo -->
             <Image Grid.Column="0" Source="/assets/logo.png" Height="50" Width="50" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-            <!-- Title -->
             <TextBlock Grid.Column="1" Text="Panel Użytkownika" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="#2C3E50"/>
 
-            <!-- Back Button -->
             <Button Grid.Column="2" Content="Strona główna" Click="BackButton_Click" Width="130" Margin="5"/>
         </Grid>
 
-        <!-- Content with TabControl -->
         <Border Grid.Row="1" Background="White" BorderBrush="#2C3E50" BorderThickness="1" Margin="20" CornerRadius="8">
             <TabControl Margin="5" BorderThickness="0" Background="Transparent">
-                <!-- Profile Tab -->
                 <TabItem Header="Dane Użytkowanika">
                     <Grid Margin="20">
                         <StackPanel>
@@ -163,22 +144,16 @@
                     </Grid>
                 </TabItem>
 
-                <!-- Reservations Tab -->
                 <TabItem Header="Moje Rezerwacje">
                     <Grid Margin="15">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <!-- Title -->
                             <RowDefinition Height="*"/>
-                            <!-- DataGrid -->
                             <RowDefinition Height="Auto"/>
-                            <!-- Action buttons -->
                         </Grid.RowDefinitions>
 
-                        <!-- Title -->
                         <TextBlock Grid.Row="0" Text="Moje rezerwacje" FontSize="22" FontWeight="Bold" Foreground="#4682B4" Margin="0,0,0,10"/>
 
-                        <!-- Reservations DataGrid -->
                         <DataGrid Grid.Row="1" x:Name="reservationsDataGrid" Margin="0,10" Height="Auto" SelectionMode="Single" SelectionChanged="ReservationsDataGrid_SelectionChanged">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="ID Lotu" Binding="{Binding FlightID}" Width="80"/>
@@ -192,7 +167,6 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- Action Buttons -->
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
                             <Button x:Name="payReservationButton" Content="Opłać Rezerwacje" Click="PayReservation_Click" Width="170" Margin="10" IsEnabled="False"/>
                             <Button x:Name="cancelReservationButton" Content="Anuluj Rezewacje" Click="CancelReservation_Click" Width="170" Margin="10" IsEnabled="False"/>
@@ -203,7 +177,6 @@
             </TabControl>
         </Border>
 
-        <!-- Footer -->
         <StatusBar Grid.Row="2" Background="#DDE7EE">
             <StatusBarItem>
                 <TextBlock x:Name="statusMessage" Foreground="#2C3E50"/>

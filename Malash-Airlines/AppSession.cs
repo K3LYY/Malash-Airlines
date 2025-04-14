@@ -7,6 +7,7 @@ using System.Windows;
 
 namespace Malash_Airlines
 {
+    //klasa do przechowania informacji o aktualnej sesji użytkownika
     internal class AppSession {
         public static User CurrentUser { get; set; }
         public static bool isLoggedIn = false;
@@ -15,7 +16,7 @@ namespace Malash_Airlines
             return AppSession.isLoggedIn && CurrentUser != null;
         }
 
-        // Metody pomocnicze dla wstecznej kompatybilności
+        
         public static string eMail {
             get { return CurrentUser?.Email; }
             set {

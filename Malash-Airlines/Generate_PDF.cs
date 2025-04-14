@@ -41,7 +41,7 @@ namespace Malash_Airlines {
                 InvoicePath = invoicePath
             };
         }
-
+        //stworzenie układu i grafiki biletu w PDF
         private void GenerateFlightTicket(Reservation reservation, User user, Flight flight, string outputPath) {
             Document.Create(container => {
                 container.Page(page => {

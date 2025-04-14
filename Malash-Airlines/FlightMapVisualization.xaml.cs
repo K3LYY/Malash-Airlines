@@ -16,7 +16,6 @@ namespace Malash_Airlines
     {
         private Flight flight;
 
-        // Expanded airport locations
         private static readonly Dictionary<string, (double Lat, double Lon, string Code)> AirportLocations = new()
         {
             // Europe
@@ -70,7 +69,6 @@ namespace Malash_Airlines
 
         };
 
-        // SVG viewBox settings from the map
         private const double SvgMinLon = -169.110266;
         private const double SvgMaxLat = 83.600842;
         private const double SvgMaxLon = 190.486279;
@@ -90,26 +88,21 @@ namespace Malash_Airlines
         {
             mapCanvas.Children.Clear();
 
-            // Background
             Rectangle mapBackground = new Rectangle
             {
                 Width = mapCanvas.Width,
                 Height = mapCanvas.Height,
-                Fill = new SolidColorBrush(Color.FromRgb(240, 248, 255)) // Light blue background
+                Fill = new SolidColorBrush(Color.FromRgb(240, 248, 255))
             };
             mapCanvas.Children.Add(mapBackground);
 
-            // Load and draw SVG world map
             DrawSvgWorldMap();
 
-            // Draw airports and flight path
             Point departureLocation = GetAirportLocation(flight.Departure);
             Point destinationLocation = GetAirportLocation(flight.Destination);
 
-            // Draw all airports
             DrawAllAirports();
             
-            // Highlight departure and destination
             DrawAirport(departureLocation, Colors.Green, 12);
             DrawAirport(destinationLocation, Colors.Red, 12);
             
@@ -121,13 +114,12 @@ namespace Malash_Airlines
 
         private void DrawSvgWorldMap() {
             try {
-                // Sprawdź kilka możliwych ścieżek do pliku SVG
                 string[] possiblePaths = new string[]
                 {
                     IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, "world.svg"),
                     IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "world.svg"),
                     IOPath.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "world.svg"),
-                    "world.svg" // ścieżka względna
+                    "world.svg"
                 };
 
                 string svgFilePath = null;
@@ -139,7 +131,6 @@ namespace Malash_Airlines
                 }
 
                 if (svgFilePath == null) {
-                    // Fallback do mapy uproszczonej
                     MessageBox.Show("World SVG map file not found. Using simplified map instead.", "Map Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                     Path worldOutline = new Path {
                         Stroke = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
@@ -152,25 +143,21 @@ namespace Malash_Airlines
 
                 string svgContent = System.IO.File.ReadAllText(svgFilePath);
 
-                // Parsowanie zawartości SVG
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(svgContent);
 
-                // Utworzenie grupy dla wszystkich ścieżek krajów
                 Canvas mapGroup = new Canvas {
                     Width = mapCanvas.Width,
                     Height = mapCanvas.Height
                 };
 
-                // Obliczanie skali, wyśrodkowanie oraz powiększenie o 30%
                 double scaleX = mapCanvas.Width / SvgWidth;
                 double scaleY = mapCanvas.Height / SvgHeight;
                 double baseScale = Math.Min(scaleX, scaleY);
-                double newScale = baseScale * 1; // powiększenie o 30%
+                double newScale = baseScale * 1;
                 double translateX = (mapCanvas.Width - SvgWidth * newScale) / 2;
                 double translateY = (mapCanvas.Height - SvgHeight * newScale) / 2;
 
-                // Pobieranie wszystkich elementów ścieżek
                 XmlNodeList pathNodes = doc.GetElementsByTagName("path");
 
                 foreach (XmlNode pathNode in pathNodes) {
@@ -179,7 +166,6 @@ namespace Malash_Airlines
                     string id = pathNode.Attributes["id"]?.Value ?? "";
 
                     if (!string.IsNullOrEmpty(pathData)) {
-                        // Tworzenie geometrii ścieżki z danych SVG
                         Geometry geometry = ParseSvgPath(pathData);
 
                         if (geometry != null) {
@@ -192,7 +178,6 @@ namespace Malash_Airlines
                                 Tag = id
                             };
 
-                            // Zastosowanie transformacji: skalowanie (z powiększeniem o 30%) i translacja
                             TransformGroup transforms = new TransformGroup();
                             transforms.Children.Add(new ScaleTransform(newScale, newScale));
                             transforms.Children.Add(new TranslateTransform(translateX, translateY));
@@ -207,7 +192,6 @@ namespace Malash_Airlines
             } catch (Exception ex) {
                 MessageBox.Show($"Error loading SVG map: {ex.Message}", "Map Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
-                // Fallback do mapy uproszczonej
                 Path worldOutline = new Path {
                     Stroke = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
                     StrokeThickness = 0.8,
@@ -222,14 +206,12 @@ namespace Malash_Airlines
         {
             try
             {
-                // Próba bezpośredniego parsowania danych ścieżki za pomocą XamlReader
                 string xamlPath = $"<Path xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" Data=\"{pathData}\"/>";
                 Path path = XamlReader.Parse(xamlPath) as Path;
                 return path?.Data;
             }
             catch
             {
-                // Jeśli parsowanie nie powiedzie się, próba ręcznej konwersji ścieżki SVG na XAML
                 StreamGeometry streamGeometry = new StreamGeometry();
 
                 using (StreamGeometryContext ctx = streamGeometry.Open())
@@ -239,7 +221,6 @@ namespace Malash_Airlines
 
                     while (i < pathData.Length)
                     {
-                        // Pomijamy białe znaki
                         while (i < pathData.Length && char.IsWhiteSpace(pathData[i]))
                             i++;
 
@@ -249,33 +230,32 @@ namespace Malash_Airlines
                         char command = pathData[i];
                         i++;
 
-                        // Pomijamy białe znaki po komendzie
                         while (i < pathData.Length && char.IsWhiteSpace(pathData[i]))
                             i++;
 
                         switch (command)
                         {
-                            case 'm': // Względne przesunięcie
-                            case 'M': // Absolutne przesunięcie
+                            case 'm':
+                            case 'M':
                                 if (TryParsePoint(pathData, ref i, out Point point))
                                 {
                                     ctx.BeginFigure(point, true, false);
                                     isFirstCommand = false;
                                 }
                                 break;
-                            case 'l': // Względna linia
-                            case 'L': // Absolutna linia
+                            case 'l':
+                            case 'L':
                                 if (!isFirstCommand && TryParsePoint(pathData, ref i, out Point linePoint))
                                 {
                                     ctx.LineTo(linePoint, true, true);
                                 }
                                 break;
-                            case 'z': // Zamknięcie ścieżki
-                            case 'Z': // Zamknięcie ścieżki
+                            case 'z':
+                            case 'Z':
                                 ctx.Close();
                                 break;
-                            case 'c': // Względna krzywa Beziera
-                            case 'C': // Absolutna krzywa Beziera
+                            case 'c':
+                            case 'C':
                                 if (!isFirstCommand && 
                                     TryParsePoint(pathData, ref i, out Point controlPoint1) && 
                                     TryParsePoint(pathData, ref i, out Point controlPoint2) && 
@@ -285,7 +265,6 @@ namespace Malash_Airlines
                                 }
                                 break;
                             default:
-                                // Pomijamy nieznane komendy
                                 while (i < pathData.Length && !char.IsLetter(pathData[i]))
                                     i++;
                                 break;
@@ -302,11 +281,9 @@ namespace Malash_Airlines
             point = new Point();
             string xStr = "", yStr = "";
 
-            // Pomijamy białe znaki
             while (index < pathData.Length && char.IsWhiteSpace(pathData[index]))
                 index++;
 
-            // Parsowanie X
             while (index < pathData.Length && 
                   (char.IsDigit(pathData[index]) || pathData[index] == '.' || pathData[index] == '-' || 
                    pathData[index] == 'e' || pathData[index] == 'E' || pathData[index] == '+'))
@@ -315,11 +292,9 @@ namespace Malash_Airlines
                 index++;
             }
 
-            // Pomijamy białe znaki i przecinki
             while (index < pathData.Length && (char.IsWhiteSpace(pathData[index]) || pathData[index] == ','))
                 index++;
 
-            // Parsowanie Y
             while (index < pathData.Length && 
                   (char.IsDigit(pathData[index]) || pathData[index] == '.' || pathData[index] == '-' || 
                    pathData[index] == 'e' || pathData[index] == 'E' || pathData[index] == '+'))
@@ -355,7 +330,6 @@ namespace Malash_Airlines
             double xNormalized = (lon - SvgMinLon) / (SvgMaxLon - SvgMinLon);
             double yNormalized = (SvgMaxLat - lat) / (SvgMaxLat - SvgMinLat);
 
-            // Dodajemy stałe przesunięcie w dół (np. 20 pikseli)
             double offsetY = 95;
 
             double x = translateX + (xNormalized * SvgWidth * scale);
@@ -369,14 +343,12 @@ namespace Malash_Airlines
         {
             foreach (var airport in AirportLocations)
             {
-                // Pomijamy punkty odlotu i przylotu, ponieważ zostaną podświetlone osobno
                 if (airport.Key == flight.Departure || airport.Key == flight.Destination)
                     continue;
                 
                 Point location = ConvertLatLonToCanvas(airport.Value.Lat, airport.Value.Lon);
                 DrawAirport(location, Colors.DarkGray, 5);
                 
-                // Rysowanie kodów lotnisk
                 TextBlock airportCode = new TextBlock
                 {
                     Text = airport.Value.Code,
@@ -391,7 +363,6 @@ namespace Malash_Airlines
 
         private void DrawAirport(Point location, Color color, double size = 10)
         {
-            // Znacznik lotniska
             Ellipse airportMarker = new Ellipse
             {
                 Width = size,
@@ -404,7 +375,6 @@ namespace Malash_Airlines
             Canvas.SetTop(airportMarker, location.Y - size/2);
             mapCanvas.Children.Add(airportMarker);
             
-            // Efekt pulsu dla lotnisk wylotu i przylotu
             if (size > 8)
             {
                 Ellipse pulse = new Ellipse
@@ -423,11 +393,9 @@ namespace Malash_Airlines
 
         private void DrawFlightPath(Point start, Point end)
         {
-            // Obliczanie odległości dla wysokości łuku lotu
             double distance = Math.Sqrt(Math.Pow(end.X - start.X, 2) + Math.Pow(end.Y - start.Y, 2));
-            double curveHeight = Math.Min(distance * 0.15, 60); // Ograniczenie wysokości krzywej dla bardzo długich lotów
+            double curveHeight = Math.Min(distance * 0.15, 60);
             
-            // Rysowanie ścieżki lotu z łukiem
             Path flightPath = new Path
             {
                 Stroke = new SolidColorBrush(Color.FromRgb(52, 152, 219)),
@@ -454,27 +422,22 @@ namespace Malash_Airlines
             flightPath.Data = geometry;
             mapCanvas.Children.Add(flightPath);
             
-            // Dodanie ikony samolotu pośrodku trasy
             DrawAirplaneIcon(midPoint);
         }
         
         private void DrawAirplaneIcon(Point location)
         {
-            // Utworzenie ikony samolotu
             Path airplaneIcon = new Path
             {
                 Fill = new SolidColorBrush(Colors.White),
                 Stroke = new SolidColorBrush(Color.FromRgb(52, 152, 219)),
                 StrokeThickness = 1.5,
-                // Dane ścieżki kształtu samolotu
                 Data = Geometry.Parse("M20,12 L25,17 L23,20 L18,18 L14,25 L11,24 L13,17 L8,15 L6,18 L3,17 L8,12 L3,7 L6,6 L8,9 L13,7 L11,0 L14,-1 L18,6 L23,4 L25,7 L20,12z")
             };
             
-            // Ustawienie pozycji ikony samolotu
             Canvas.SetLeft(airplaneIcon, location.X - 14);
             Canvas.SetTop(airplaneIcon, location.Y - 12);
             
-            // Obracanie samolotu w kierunku lotu
             RotateTransform rotateTransform = new RotateTransform(45);
             airplaneIcon.RenderTransform = rotateTransform;
             
@@ -483,13 +446,10 @@ namespace Malash_Airlines
 
         private void DrawLabels(Point departure, Point destination)
         {
-            // Przesunięcie dla etykiety wylotu w zależności od jej pozycji
             double dOffsetX = departure.X < mapCanvas.Width / 2 ? 10 : -60;
             
-            // Przesunięcie dla etykiety przylotu w zależności od jej pozycji
             double destOffsetX = destination.X < mapCanvas.Width / 2 ? 10 : -60;
             
-            // Pobieranie kodów lotnisk do wyświetlenia w etykietach
             string departureCode = "";
             string destinationCode = "";
             
@@ -501,17 +461,14 @@ namespace Malash_Airlines
                     destinationCode = airport.Value.Code;
             }
             
-            // Dodawanie etykiet z tłem dla lepszej widoczności
             AddLabelWithBackground(flight.Departure, departure, dOffsetX, -15, departureCode);
             AddLabelWithBackground(flight.Destination, destination, destOffsetX, -15, destinationCode);
         }
 
         private void AddLabelWithBackground(string text, Point location, double offsetX, double offsetY, string code)
         {
-            // Utworzenie treści etykiety z kodem
             string displayText = $"{text} ({code})";
             
-            // Utworzenie tła dla etykiety
             Rectangle labelBg = new Rectangle
             {
                 Fill = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
@@ -521,7 +478,6 @@ namespace Malash_Airlines
                 RadiusY = 4
             };
             
-            // Utworzenie bloku tekstu
             TextBlock label = new TextBlock
             {
                 Text = displayText,
@@ -530,29 +486,24 @@ namespace Malash_Airlines
                 Padding = new Thickness(4)
             };
             
-            // Pomiar tekstu w celu odpowiedniego wymiarowania tła
             label.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
             Size textSize = label.DesiredSize;
             
-            // Ustawianie rozmiarów tła
             labelBg.Width = textSize.Width + 8;
             labelBg.Height = textSize.Height + 4;
             
-            // Ustawianie pozycji tła i etykiety
             Canvas.SetLeft(labelBg, location.X + offsetX);
             Canvas.SetTop(labelBg, location.Y + offsetY);
             
             Canvas.SetLeft(label, location.X + offsetX + 4);
             Canvas.SetTop(label, location.Y + offsetY);
             
-            // Dodawanie do kanwy
             mapCanvas.Children.Add(labelBg);
             mapCanvas.Children.Add(label);
         }
 
         private Geometry CreateWorldMap()
         {
-            // Uproszczona mapa awaryjna na wypadek niepowodzenia ładowania SVG
             StreamGeometry geometry = new StreamGeometry();
 
             using (StreamGeometryContext context = geometry.Open())
@@ -607,7 +558,6 @@ namespace Malash_Airlines
 
         private void DrawLegend()
         {
-            // Utworzenie tła legendy
             Rectangle legendBackground = new Rectangle
             {
                 Width = 170,
@@ -622,7 +572,6 @@ namespace Malash_Airlines
             Canvas.SetBottom(legendBackground, 10);
             mapCanvas.Children.Add(legendBackground);
 
-            // Tytuł legendy
             TextBlock legendTitle = new TextBlock
             {
                 Text = "Flight Legend",
@@ -633,12 +582,11 @@ namespace Malash_Airlines
             Canvas.SetBottom(legendTitle, 90);
             mapCanvas.Children.Add(legendTitle);
 
-            // Wskaźnik wylotu
             Ellipse departureIndicator = new Ellipse
             {
                 Width = 8,
                 Height = 8,
-                Fill = new SolidColorBrush(Color.FromRgb(46, 204, 113)) // Zielony
+                Fill = new SolidColorBrush(Color.FromRgb(46, 204, 113))
             };
             Canvas.SetRight(departureIndicator, 150);
             Canvas.SetBottom(departureIndicator, 70);
@@ -653,12 +601,11 @@ namespace Malash_Airlines
             Canvas.SetBottom(departureText, 67);
             mapCanvas.Children.Add(departureText);
 
-            // Wskaźnik przylotu
             Ellipse destinationIndicator = new Ellipse
             {
                 Width = 8,
                 Height = 8,
-                Fill = new SolidColorBrush(Color.FromRgb(231, 76, 60)) // Czerwony
+                Fill = new SolidColorBrush(Color.FromRgb(231, 76, 60))
             };
             Canvas.SetRight(destinationIndicator, 150);
             Canvas.SetBottom(destinationIndicator, 50);
@@ -673,7 +620,6 @@ namespace Malash_Airlines
             Canvas.SetBottom(destinationText, 47);
             mapCanvas.Children.Add(destinationText);
             
-            // Wskaźnik innych lotnisk
             Ellipse otherAirportsIndicator = new Ellipse
             {
                 Width = 8,
@@ -696,7 +642,6 @@ namespace Malash_Airlines
 
         private void DrawFlightInfo()
         {
-            // Utworzenie tła informacji o locie
             Rectangle infoBackground = new Rectangle
             {
                 Width = 200,
@@ -711,7 +656,6 @@ namespace Malash_Airlines
             Canvas.SetTop(infoBackground, 10);
             mapCanvas.Children.Add(infoBackground);
 
-            // Tytuł informacji o locie
             TextBlock infoTitle = new TextBlock
             {
                 Text = "Flight Information",
@@ -722,7 +666,6 @@ namespace Malash_Airlines
             Canvas.SetTop(infoTitle, 15);
             mapCanvas.Children.Add(infoTitle);
 
-            // ID lotu
             TextBlock flightId = new TextBlock
             {
                 Text = $"Flight #: {flight.ID}",
@@ -732,7 +675,6 @@ namespace Malash_Airlines
             Canvas.SetTop(flightId, 35);
             mapCanvas.Children.Add(flightId);
 
-            // Data lotu
             TextBlock flightDate = new TextBlock
             {
                 Text = $"Date: {flight.Date.ToString("MM/dd/yyyy")}",
@@ -742,7 +684,6 @@ namespace Malash_Airlines
             Canvas.SetTop(flightDate, 55);
             mapCanvas.Children.Add(flightDate);
 
-            // Czas lotu
             TextBlock flightTime = new TextBlock
             {
                 Text = $"Time: {flight.Time}",
@@ -752,7 +693,6 @@ namespace Malash_Airlines
             Canvas.SetTop(flightTime, 75);
             mapCanvas.Children.Add(flightTime);
             
-            // Samolot
             TextBlock aircraftInfo = new TextBlock
             {
                 Text = $"Aircraft: {flight.Plane}",

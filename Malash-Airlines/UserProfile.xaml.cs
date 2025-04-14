@@ -56,7 +56,6 @@ namespace Malash_Airlines
             nameTextBox.Text = _currentUser.Name;
             emailTextBox.Text = _currentUser.Email;
 
-            // Store original values for comparison when saving
             _originalName = _currentUser.Name;
             _originalEmail = _currentUser.Email;
         }
@@ -65,15 +64,12 @@ namespace Malash_Airlines
         {
             try
             {
-                // Clear existing reservations
                 _userReservations.Clear();
 
-                // Get user reservations from database
                 var userReservations = Database.GetReservations(_currentUser.ID);
 
                 foreach (var reservation in userReservations)
                 {
-                    // Get the flight details for this reservation
                     var flight = Database.GetFlightById(reservation.FlightID);
 
                     if (flight != null)
@@ -93,7 +89,6 @@ namespace Malash_Airlines
                     }
                 }
 
-                // Update status message
                 statusMessage.Text = $"Loaded {_userReservations.Count} reservation(s)";
             }
             catch (Exception ex)
@@ -107,30 +102,25 @@ namespace Malash_Airlines
         {
             try
             {
-                // Basic validation
                 if (string.IsNullOrWhiteSpace(nameTextBox.Text) || string.IsNullOrWhiteSpace(emailTextBox.Text))
                 {
                     MessageBox.Show("Name and Email cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Check if there are any changes
                 if (_originalName == nameTextBox.Text && _originalEmail == emailTextBox.Text)
                 {
                     statusMessage.Text = "No changes to save";
                     return;
                 }
 
-                // Update user in database
                 bool result = Database.UpdateUser(_currentUser.ID, nameTextBox.Text, emailTextBox.Text);
 
                 if (result)
                 {
-                    // Update current user object
                     _currentUser.Name = nameTextBox.Text;
                     _currentUser.Email = emailTextBox.Text;
 
-                    // Update original values
                     _originalName = _currentUser.Name;
                     _originalEmail = _currentUser.Email;
 
@@ -152,7 +142,6 @@ namespace Malash_Airlines
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            // Restore original values
             nameTextBox.Text = _originalName;
             emailTextBox.Text = _originalEmail;
             statusMessage.Text = "Changes cancelled";
@@ -164,7 +153,6 @@ namespace Malash_Airlines
         {
             var selectedReservation = reservationsDataGrid.SelectedItem as UserReservation;
 
-            // Enable or disable buttons based on selection and status
             if (selectedReservation != null)
             {
                 bool isPending = selectedReservation.Status.ToLower() == "unconfirmed" ||
@@ -186,20 +174,20 @@ namespace Malash_Airlines
             if (selectedReservation != null) {
                 try {
                     // Simple payment confirmation dialog
+                    // Simple payment confirmation dialog
+                    // Simple payment confirmation dialog
+                    // Simple payment confirmation dialog
+                    // Simple payment confirmation dialog
                     MessageBoxResult result = MessageBox.Show(
                         $"Confirm payment of {selectedReservation.Price:C} for your flight from {selectedReservation.Departure} to {selectedReservation.Destination}?",
-                        "Payment Confirmation",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
 
-                    if (result == MessageBoxResult.Yes) {
-                        // Update reservation status in database
-                        bool updateResult = Database.UpdateReservation(selectedReservation.ReservationID, "confirmed");
+                    if (result == MessageBoxResult.Yes)
+                        if (updateResult)
+                        {
 
-                        if (updateResult) {
-                            // Update status in local collection
-                            selectedReservation.Status = "confirmed";
-
+                        if (updateResult)
                             // Update invoice status to paid
                             var invoices = Database.GetInvoices(selectedReservation.ReservationID);
                             Invoice paidInvoice = null;
@@ -232,9 +220,12 @@ namespace Malash_Airlines
                             }
 
                             // Refresh DataGrid
+                            // Update status in local collection
+                            selectedReservation.Status = "confirmed";
+
+                            // Refresh DataGrid
                             reservationsDataGrid.Items.Refresh();
 
-                            // Update selection to refresh button states
                             ReservationsDataGrid_SelectionChanged(null, null);
 
                             statusMessage.Text = "Payment successful";
@@ -260,7 +251,6 @@ namespace Malash_Airlines
             {
                 try
                 {
-                    // Confirmation dialog
                     MessageBoxResult result = MessageBox.Show(
                         $"Are you sure you want to cancel your reservation for the flight from {selectedReservation.Departure} to {selectedReservation.Destination}?",
                         "Cancel Reservation",
@@ -269,29 +259,21 @@ namespace Malash_Airlines
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        // Two options: update status to cancelled or remove completely
-                        // Option 1: Update status to "cancelled"
                         bool updateResult = Database.UpdateReservation(selectedReservation.ReservationID, "cancelled");
 
-                        // Option 2: Remove reservation completely (uncomment if preferred)
-                        // bool updateResult = Database.RemoveReservation(selectedReservation.ReservationID);
 
                         if (updateResult)
                         {
-                            // Update or remove from local collection
                             if (selectedReservation.Status.ToLower() == "cancelled")
                             {
-                                // Remove from collection if fully cancelled
                                 _userReservations.Remove(selectedReservation);
                             }
                             else
                             {
-                                // Update status in local collection
                                 selectedReservation.Status = "cancelled";
                                 reservationsDataGrid.Items.Refresh();
                             }
 
-                            // Update selection to refresh button states
                             ReservationsDataGrid_SelectionChanged(null, null);
 
                             statusMessage.Text = "Reservation cancelled";
@@ -318,7 +300,6 @@ namespace Malash_Airlines
         }
     }
 
-    // ViewModel for user reservations
     public class UserReservation
     {
         public int ReservationID { get; set; }
