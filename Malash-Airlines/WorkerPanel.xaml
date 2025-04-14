@@ -236,7 +236,7 @@
 
                             <StackPanel Grid.Row="3" Orientation="Horizontal">
                                 <Button Content="Odśwież" x:Name="RefreshReservationsButton" Click="RefreshReservationsButton_Click" />
-                                <Button Content="Usuń" x:Name="RemoveReservationButton" Margin="10,0,0,0" Click="RemoveReservationButton_Click" />
+                                <Button Content="Usuń" x:Name="RemoveReservationButton" Margin="10,10,0,0" Click="RemoveReservationButton_Click" />
                             </StackPanel>
                         </Grid>
                     </Border>
