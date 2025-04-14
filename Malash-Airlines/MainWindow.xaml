@@ -81,8 +81,8 @@
         </Style>
     </Window.Resources>
 
-        <Grid Name="windowGrid">
-            <Grid.RowDefinitions>
+    <Grid Name="windowGrid">
+        <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
@@ -102,13 +102,13 @@
 
             <Button Grid.Column="1" Content="Rezerwacje" Width="Auto" Margin="5" Click="Category1Button_Click"/>
 
-            
+
             <Button Grid.Column="3" Content="Dane użytkownika" Width="Auto" Margin="5" Click="Button_Click"/>
             <Button Grid.Column="4" Content="Panel Pracownika" Width="Auto" Margin="5" x:Name="category4Button" 
                     Click="Category4Button_Click" Visibility="Collapsed"/>
 
             <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick" Name="loginButton"/>
-            </Grid>
+        </Grid>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -133,5 +133,15 @@
                Style="{StaticResource dateLabels}" Margin="0,0,200,0"/>
         <Label Grid.Row="2" Grid.Column="0" Name="datelbl" 
                Style="{StaticResource dateLabels}" Margin="200,0,0,0"/>
+        <Button x:Name="refreshButton" 
+                Content="Odśwież" 
+                Click="RefreshButton_Click"
+                Width="80" 
+                Height="40" 
+                Grid.Row="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0,0,10,0"/>
+
     </Grid>
 </Window>
