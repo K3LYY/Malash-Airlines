@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Boeing 737 Seat Selection" 
+        <TextBlock Grid.Row="0" Text="Seat Selection" 
                    FontSize="24" FontWeight="Bold" Margin="20" 
                    HorizontalAlignment="Center"/>
 
