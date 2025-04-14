@@ -6,7 +6,6 @@ using System.IO;
 
 namespace Malash_Airlines {
     public partial class loginWindow : Window {
-        //private Database ;
         private string _currentOneTimeCode;
 
         public loginWindow() {
@@ -14,12 +13,11 @@ namespace Malash_Airlines {
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
             Env.Load(envPath);
 
-            // Wire up event handlers
             SendCodeButton.Click += SendCodeButton_Click;
             LoginButton.Click += LoginButton_Click;
             this.Closing += LoginWindow_Closing;
         }
-
+        //funkcja do wysyłania kodu weryfikacyjnego na podany adres e-mail
         private void SendCodeButton_Click(object sender, RoutedEventArgs e) {
             string email = EmailTextBox.Text.Trim();
 
@@ -29,21 +27,17 @@ namespace Malash_Airlines {
             }
 
             try {
-                // Check if user exists
                 var existingUser = Database.GetUsers().FirstOrDefault(u => u.Email == email);
 
                 if (existingUser == null) {
-                    // User doesn't exist, create a new user
                     string name = "User_" + Guid.NewGuid().ToString().Substring(0, 8);
                     string tempPassword = GenerateTemporaryPassword();
 
-                    // Add user to database with a default role
                     Database.AddUser(name, email, tempPassword, "user");
 
                     MessageBox.Show("Utworzono nowe konto.", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
-                // Send one-time password
                 _currentOneTimeCode = mail_functions.SendOneTimePassword(email);
 
                 MessageBox.Show("Kod weryfikacyjny został wysłany na Twój adres e-mail.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -51,7 +45,7 @@ namespace Malash_Airlines {
                 MessageBox.Show($"Wystąpił błąd: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        //funkcja do logowania użytkownika po naciścnięciu przycisku
         private void LoginButton_Click(object sender, RoutedEventArgs e) {
             string email = EmailTextBox.Text.Trim();
             string verificationCode = VerificationCodeTextBox.Text.Trim();
@@ -62,18 +56,14 @@ namespace Malash_Airlines {
             }
 
             if (verificationCode == _currentOneTimeCode || ( email == "malashairlines@gmail.com" && verificationCode == Environment.GetEnvironmentVariable("STATIC_ADMIN_ONE_TIME_CODE"))) {
-                // Find the user by email
                 var user = Database.GetUsers().FirstOrDefault(u => u.Email == email);
 
                 if (user != null) {
 
-                    AppSession.CurrentUser = user; // Przypisanie całego obiektu użytkownika
+                    AppSession.CurrentUser = user;
                     AppSession.isLoggedIn = true;
-                    // Successful login
                     MessageBox.Show($"Witaj, {AppSession.CurrentUser.Email}!", "Logowanie", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // TODO: Open main application window
-                    // For now, just close the login window
                     MainWindow window = new MainWindow();
                     window.Show();
 
@@ -88,17 +78,14 @@ namespace Malash_Airlines {
         }
 
         private string GenerateTemporaryPassword() {
-            // Simple temporary password generation 
-            // In a real-world scenario, use a more secure method
             return Guid.NewGuid().ToString().Substring(0, 10);
         }
 
         private void LoginWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Only handle this if we're not already logging in
             if (!AppSession.isLoggedIn)
             {
-                e.Cancel = true; // Cancel the immediate close
+                e.Cancel = true;
                 Dispatcher.BeginInvoke((Action)(() => {
                     OpenMainWindowAndClose();
                 }));
@@ -111,12 +98,10 @@ namespace Malash_Airlines {
 
         private void OpenMainWindowAndClose()
         {
-            // Create and show main window
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            // Close this window
-            this.Closing -= LoginWindow_Closing; // Remove the handler to prevent infinite loop
+            this.Closing -= LoginWindow_Closing;
             this.Close();
         }
     }

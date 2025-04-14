@@ -160,7 +160,6 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
 
-                    // Validate airports and plane
                     string validateQuery = @"
                         SELECT 
                             (SELECT COUNT(*) FROM airports WHERE ID = @Departure) +
@@ -178,7 +177,6 @@ namespace Malash_Airlines {
                         }
                     }
 
-                    // Insert new flight
                     string query = @"
                         INSERT INTO flights (Departure, Destination, Date, Time, Price, PlaneID, FlightType)
                         VALUES (@Departure, @Destination, @Date, @Time, @Price, @PlaneID, @FlightType);
@@ -206,7 +204,6 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
 
-                    // Validate user exists
                     string checkUserQuery = "SELECT COUNT(*) FROM users WHERE ID = @UserID";
                     using (var checkUserCommand = new MySqlCommand(checkUserQuery, connection)) {
                         checkUserCommand.Parameters.AddWithValue("@UserID", userId);
@@ -217,7 +214,6 @@ namespace Malash_Airlines {
                         }
                     }
 
-                    // Sprawdź, czy lot nie jest prywatny
                     string checkFlightTypeQuery = "SELECT FlightType FROM flights WHERE ID = @FlightID";
                     using (var checkFlightTypeCommand = new MySqlCommand(checkFlightTypeQuery, connection)) {
                         checkFlightTypeCommand.Parameters.AddWithValue("@FlightID", flightId);
@@ -228,7 +224,6 @@ namespace Malash_Airlines {
                         }
                     }
 
-                    // Insert reservation
                     string query = @"
                         INSERT INTO reservations (UserID, FlightID, SeatNumber, Status)
                         VALUES (@UserID, @FlightID, @SeatNumber, 'confirmed');";
@@ -252,7 +247,6 @@ namespace Malash_Airlines {
                 using (var connection = new MySqlConnection(_connectionString)) {
                     connection.Open();
 
-                    // Sprawdzamy, czy rezerwacja "FULL" już istnieje
                     if (seatNumber == "FULL") {
                         string checkQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID";
                         using (var checkCommand = new MySqlCommand(checkQuery, connection)) {
@@ -261,7 +255,7 @@ namespace Malash_Airlines {
                             if (existingReservations > 0) return -1;
                         }
                     } else {
-                        // Sprawdzenie czy miejsce nie jest zajęte / nie ma FULL
+
                         string checkSeatQuery = "SELECT COUNT(*) FROM reservations WHERE FlightID = @FlightID AND SeatNumber = @SeatNumber";
                         using (var seatCmd = new MySqlCommand(checkSeatQuery, connection)) {
                             seatCmd.Parameters.AddWithValue("@FlightID", flightId);
@@ -276,7 +270,6 @@ namespace Malash_Airlines {
                         }
                     }
 
-                    // Dodaj rezerwację z wybranym statusem
                     string insertQuery = @"
                 INSERT INTO reservations (UserID, FlightID, SeatNumber, Status)
                 VALUES (@UserID, @FlightID, @SeatNumber, @Status);
@@ -327,7 +320,7 @@ namespace Malash_Airlines {
                 foreach (var res in unconfirmedReservations) {
                     var user = userList.FirstOrDefault(u => u.ID == res.UserID);
                     var flight = flightList.FirstOrDefault(f => f.ID == res.FlightID)
-                        ?? GetFlightById(res.FlightID); // Próba pobrania lotu, nawet jeśli nie jest już dostępny
+                        ?? GetFlightById(res.FlightID);
 
                     if (user != null && flight != null) {
                         result.Add(new ReservationViewModel {
@@ -701,7 +694,6 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
 
-                    // Check if reservation exists
                     string checkReservationQuery = "SELECT COUNT(*) FROM reservations WHERE ID = @ReservationID";
                     using (var checkCommand = new MySqlCommand(checkReservationQuery, connection)) {
                         checkCommand.Parameters.AddWithValue("@ReservationID", invoice.ReservationID);
@@ -712,24 +704,20 @@ namespace Malash_Airlines {
                         }
                     }
 
-                    // Generate a unique invoice number (format: INV-YYYYMMDD-XXXX) if not provided
                     string invoiceNumber = invoice.InvoiceNumber;
                     if (string.IsNullOrEmpty(invoiceNumber)) {
                         invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
 
-                        // Check if invoice number is unique
                         string checkInvoiceQuery = "SELECT COUNT(*) FROM invoices WHERE InvoiceNumber = @InvoiceNumber";
                         using (var checkCommand = new MySqlCommand(checkInvoiceQuery, connection)) {
                             checkCommand.Parameters.AddWithValue("@InvoiceNumber", invoiceNumber);
                             while (Convert.ToInt32(checkCommand.ExecuteScalar()) > 0) {
-                                // If not unique, generate a new one
                                 invoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
                                 checkCommand.Parameters["@InvoiceNumber"].Value = invoiceNumber;
                             }
                         }
                     }
 
-                    // Insert new invoice
                     string query = @"
                 INSERT INTO invoices (ReservationID, Amount, Status, IssueDate, DueDate, InvoiceNumber, Notes)
                 VALUES (@ReservationID, @Amount, @Status, @IssueDate, @DueDate, @InvoiceNumber, @Notes);
@@ -774,11 +762,9 @@ namespace Malash_Airlines {
                 try {
                     connection.Open();
 
-                    // Build dynamic update query
                     var queryBuilder = new System.Text.StringBuilder("UPDATE invoices SET ");
                     var parameters = new List<string>();
 
-                    // Check which properties should be updated
                     if (invoice.Amount > 0) {
                         parameters.Add("Amount = @Amount");
                     }
@@ -791,7 +777,6 @@ namespace Malash_Airlines {
                         parameters.Add("DueDate = @DueDate");
                     }
 
-                    // Add optional PaymentDate
                     if (invoice.PaymentDate != default(DateTime)) {
                         parameters.Add("PaymentDate = @PaymentDate");
                     }
@@ -800,7 +785,6 @@ namespace Malash_Airlines {
                         parameters.Add("Notes = @Notes");
                     }
 
-                    // If no parameters provided, return true without making any changes
                     if (parameters.Count == 0) {
                         return true;
                     }
@@ -840,7 +824,6 @@ namespace Malash_Airlines {
             }
         }
 
-        // Dodanie metody do pobierania faktur
         public static List<Invoice> GetInvoices(int? reservationId = null) {
             var invoices = new List<Invoice>();
 
@@ -881,7 +864,6 @@ namespace Malash_Airlines {
             return invoices;
         }
 
-        // Metoda pomocnicza do pobierania pojedynczej faktury
         public static Invoice GetInvoiceById(int invoiceId) {
             using (var connection = new MySqlConnection(_connectionString)) {
                 try {

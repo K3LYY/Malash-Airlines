@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="loginWindow" Height="500" Width="800" ResizeMode="NoResize" Background="#DDE7EE">
     <Window.Resources>
-        <!-- Style for buttons (same as main window) -->
+
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
@@ -17,14 +17,12 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Gradient dla tła przycisku -->
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                         <GradientStop Color="#4682B4" Offset="0"/>
-                        <!-- Ciemniejszy niebieski (SteelBlue) -->
+
                         <GradientStop Color="#2F4F4F" Offset="1"/>
-                        <!-- Bardzo ciemny szary (DarkSlateGray) -->
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
@@ -34,9 +32,9 @@
                         <Setter.Value>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#5A9BD4" Offset="0"/>
-                                <!-- Jaśniejszy niebieski przy najechaniu -->
+
                                 <GradientStop Color="#3F6F6F" Offset="1"/>
-                                <!-- Jaśniejszy szary przy najechaniu -->
+
                             </LinearGradientBrush>
                         </Setter.Value>
                     </Setter>
@@ -48,8 +46,7 @@
                 </Style>
             </Style.Resources>
         </Style>
-
-        <!-- Style for TextBox and PasswordBox -->
+        
         <Style TargetType="TextBox">
             <Setter Property="Height" Value="35"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -67,26 +64,20 @@
     </Window.Resources>
 
     <Grid>
-        
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
-                <!-- Nagłówek -->
-                <TextBlock Text="Zaloguj się" FontSize="24" FontWeight="SemiBold"
+
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
+            <TextBlock Text="Zaloguj się" FontSize="24" FontWeight="SemiBold"
                            Foreground="#2C3E50" HorizontalAlignment="Center" Margin="0,10,0,20"/>
 
-                <!-- Pole E-mail -->
-                <TextBlock Text="Adres e-mail" FontSize="14" Foreground="#2C3E50" Margin="0,5"/>
-                <TextBox Name="EmailTextBox" Margin="0,5,0,10"/>
+            <TextBlock Text="Adres e-mail" FontSize="14" Foreground="#2C3E50" Margin="0,5"/>
+            <TextBox Name="EmailTextBox" Margin="0,5,0,10"/>
 
-                <!-- Przycisk do wysłania kodu -->
-                <Button Content="Wyślij kod" Name="SendCodeButton" Margin="0,10,0,20"/>
-
-                <!-- Pole Kod weryfikacyjny -->
-                <TextBlock Text="Kod weryfikacyjny" FontSize="14" Foreground="#2C3E50" Margin="0,5"/>
-                <TextBox Name="VerificationCodeTextBox" Margin="0,5,0,20"/>
-
-                <!-- Przycisk Logowania -->
-                <Button Content="Zaloguj" Name="LoginButton" Margin="0,10,0,0"/>
-
+            <Button Content="Wyślij kod" Name="SendCodeButton" Margin="0,10,0,20"/>
+                
+            <TextBlock Text="Kod weryfikacyjny" FontSize="14" Foreground="#2C3E50" Margin="0,5"/>
+            <TextBox Name="VerificationCodeTextBox" Margin="0,5,0,20"/>
+               
+            <Button Content="Zaloguj" Name="LoginButton" Margin="0,10,0,0"/>
 
             <Button Content="Anuluj" Name="CancelButton" Margin="0,20,0,0" Click="CancelButton_Click"/>
         </StackPanel>

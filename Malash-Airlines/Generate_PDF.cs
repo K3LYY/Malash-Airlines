@@ -8,13 +8,14 @@ using QuestPDF.Elements;
 
 namespace Malash_Airlines
 {
+    //klasa do przechowania informacji o bilecie lotniczym
     public class FlightTicketInfo
     {
         public string PassengerName { get; set; }
         public string FlightNumber { get; set; }
         public string SeatNumber { get; set; }
     }
-
+    //klasa do przechowania wyników generacji PDF
     public class PDFGenerationResult
     {
         public string TicketPath { get; set; }
@@ -37,7 +38,7 @@ namespace Malash_Airlines
             string ticketPath = Path.Combine(_documentFolder, $"FlightTicket_{user.Name}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             string invoicePath = Path.Combine(_documentFolder, $"Invoice_{user.Name}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
 
-            // Konwersja danych dla zachowania kompatybilności z metodą GenerateInvoice
+            
             var ticketInfo = new FlightTicketInfo {
                 PassengerName = user.Name,
                 FlightNumber = flight.ID.ToString(),
@@ -52,7 +53,7 @@ namespace Malash_Airlines
                 InvoicePath = invoicePath
             };
         }
-
+        //stworzenie układu i grafiki biletu w PDF
         private void GenerateFlightTicket(Reservation reservation, User user, Flight flight, string outputPath) {
             Document.Create(container => {
                 container.Page(page => {
@@ -78,7 +79,7 @@ namespace Malash_Airlines
             })
             .GeneratePdf(outputPath);
         }
-
+        //tworzenie układu i grafiki faktury w PDF
         private void GenerateInvoice(FlightTicketInfo ticketInfo, string outputPath)
         {
             Document.Create(container =>
@@ -103,7 +104,7 @@ namespace Malash_Airlines
 
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                        // Invoice Table
+                        
                         col.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>

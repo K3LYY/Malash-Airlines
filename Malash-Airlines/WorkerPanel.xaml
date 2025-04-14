@@ -4,7 +4,6 @@
         Title="Panel Pracownika" Height="650" Width="1000"
         Background="#E8ECEF">
     <Window.Resources>
-        <!-- Style for buttons -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
@@ -41,7 +40,6 @@
             </Style.Resources>
         </Style>
 
-        <!-- Style for DataGrid -->
         <Style TargetType="DataGrid">
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#2C3E50"/>
@@ -56,7 +54,6 @@
             <Setter Property="Margin" Value="0,10"/>
         </Style>
 
-        <!-- Style for TextBox and ComboBox -->
         <Style TargetType="TextBox">
             <Setter Property="Height" Value="35"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -117,15 +114,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Border Background="White" CornerRadius="10" Padding="15" Margin="0,0,0,15" BorderBrush="#2C3E50" BorderThickness="1">
             <TextBlock Text="Panel Pracownika - Malash Airlines" FontSize="24" FontWeight="SemiBold" Foreground="#2C3E50" 
                        HorizontalAlignment="Center" />
         </Border>
 
-        <!-- Main Content -->
         <TabControl Grid.Row="1" Margin="0,5,0,0" x:Name="MainTabControl">
-            <!-- CLIENTS TAB -->
             <TabItem Header="Klienci">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -133,7 +127,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- User Management -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -166,7 +159,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Reservations Management -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -178,7 +170,6 @@
 
                             <TextBlock Text="Rezerwacje" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10" />
 
-                            <!-- Add Reservation or Order Flight -->
                             <Grid Grid.Row="1" Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -197,7 +188,6 @@
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Klient:" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <ComboBox Grid.Row="0" Grid.Column="1" x:Name="UserComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" SelectionChanged="UserComboBox_SelectionChanged" />
 
-                                <!-- Standard Reservation -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Lot:" Margin="0,0,10,0" VerticalAlignment="Center" />
                                 <ComboBox Grid.Row="1" Grid.Column="1" x:Name="FlightComboBox" DisplayMemberPath="FlightDetails" SelectedValuePath="ID" />
 
@@ -213,7 +203,6 @@
 
                                 <Button Grid.Row="3" Grid.Column="1" Content="Dodaj Rezerwację" x:Name="AddReservationButton" HorizontalAlignment="Left" Click="AddReservationButton_Click" />
 
-                                <!-- Business Flight Order -->
                                 <TextBlock Grid.Row="4" Grid.Column="0" Text="Lotnisko wylotu:" Margin="0,0,10,0" VerticalAlignment="Center" Visibility="Collapsed" x:Name="BusinessDepartureLabel" />
                                 <ComboBox Grid.Row="4" Grid.Column="1" x:Name="BusinessDepartureComboBox" DisplayMemberPath="Name" SelectedValuePath="ID" Visibility="Collapsed" />
 
@@ -223,7 +212,6 @@
                                 <Button Grid.Row="6" Grid.Column="1" Content="Zleć Lot (Business)" x:Name="OrderBusinessFlightButton" HorizontalAlignment="Left" Visibility="Collapsed" Click="OrderBusinessFlightButton_Click" />
                             </Grid>
 
-                            <!-- Reservations List -->
                             <DataGrid Grid.Row="2" x:Name="ReservationsDataGrid" Margin="0,10" SelectionChanged="ReservationsDataGrid_SelectionChanged">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding ReservationID}" Width="50" />
@@ -243,7 +231,6 @@
                 </Grid>
             </TabItem>
 
-            <!-- FLIGHTS TAB -->
             <TabItem Header="Loty">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -251,7 +238,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Flights List -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -283,7 +269,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Add Flight -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -342,7 +327,6 @@
                 </Grid>
             </TabItem>
 
-            <!-- AIRPORTS TAB -->
             <TabItem Header="Lotniska">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -350,7 +334,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Airports List -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -376,7 +359,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Add Airport -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -407,7 +389,6 @@
                                 <Button Grid.Row="2" Grid.Column="1" Content="Dodaj Lotnisko" x:Name="AddAirportButton" HorizontalAlignment="Left" Margin="0,10,0,0" Click="AddAirportButton_Click" />
                             </Grid>
 
-                            <!-- Airport Flights Section -->
                             <Grid Grid.Row="2" Margin="0,20,0,0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -430,7 +411,6 @@
                 </Grid>
             </TabItem>
 
-            <!-- PLANES TAB -->
             <TabItem Header="Samoloty">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -438,7 +418,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Planes List -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -464,7 +443,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Add Plane -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -503,7 +481,6 @@
                 </Grid>
             </TabItem>
 
-            <!-- BUSINESS CLIENTS TAB -->
             <TabItem Header="Klienci Biznesowi">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
@@ -511,7 +488,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Business Clients List -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -535,7 +511,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Order Full Plane -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -630,7 +605,6 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Lista Użytkowników -->
                     <Border Grid.Column="0" Background="White" CornerRadius="10" Margin="0,0,10,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -662,7 +636,6 @@
                         </Grid>
                     </Border>
 
-                    <!-- Zmiana Roli -->
                     <Border Grid.Column="1" Background="White" CornerRadius="10" Margin="10,0,0,0" Padding="15" BorderBrush="#2C3E50" BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>

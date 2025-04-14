@@ -11,7 +11,6 @@
         >
 
     <Window.Resources>
-        <!-- Style for date and time labels -->
         <Style x:Key="dateLabels" TargetType="Label">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="#2C3E50"/>
@@ -19,7 +18,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Style for buttons -->
         <Style TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
@@ -29,14 +27,11 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Gradient dla tła przycisku -->
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                         <GradientStop Color="#4682B4" Offset="0"/>
-                        <!-- Ciemniejszy niebieski (SteelBlue) -->
                         <GradientStop Color="#2F4F4F" Offset="1"/>
-                        <!-- Bardzo ciemny szary (DarkSlateGray) -->
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
@@ -46,9 +41,7 @@
                         <Setter.Value>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#5A9BD4" Offset="0"/>
-                                <!-- Jaśniejszy niebieski przy najechaniu -->
                                 <GradientStop Color="#3F6F6F" Offset="1"/>
-                                <!-- Jaśniejszy szary przy najechaniu -->
                             </LinearGradientBrush>
                         </Setter.Value>
                     </Setter>
@@ -64,7 +57,6 @@
             </Style.Resources>
         </Style>
 
-        <!-- Style for navigation arrows -->
         <Style x:Key="arrowButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -83,7 +75,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Style for flight display panel -->
         <Style x:Key="flightDisplayStyle" TargetType="StackPanel">
             <Setter Property="Background" Value="White"/>
             <Setter Property="Margin" Value="10"/>
@@ -92,32 +83,23 @@
 
         <Grid Name="windowGrid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="60"/>
-                <!-- Górny pasek nawigacyjny -->
-                <RowDefinition Height="*"/>
-                <!-- Główna zawartość -->
-                <RowDefinition Height="50"/>
-                <!-- Stopka z datą i godziną -->
-            </Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
 
-        <!-- Górny pasek nawigacyjny -->
         <Grid Grid.Row="0" Background="#DDE7EE">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
-                <!-- Logo -->
                 <ColumnDefinition Width="*"/>
-                <!-- Kategorie -->
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="100"/>
-                <!-- Log In -->
             </Grid.ColumnDefinitions>
 
-            <!-- Logo -->
             <Image Grid.Column="0" Source="/assets/logo.png" Height="100" Width="90" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-            <!-- Kategorie -->
             <Button Grid.Column="1" Content="Rezerwacje" Width="Auto" Margin="5" Click="Category1Button_Click"/>
 
             
@@ -125,36 +107,28 @@
             <Button Grid.Column="4" Content="Panel Pracownika" Width="Auto" Margin="5" x:Name="category4Button" 
                     Click="Category4Button_Click" Visibility="Collapsed"/>
 
-                <!-- Przycisk Log In -->
             <Button Grid.Column="5" Content="Log In" Width="Auto" Margin="5" Click="loginButtonClick" Name="loginButton"/>
             </Grid>
 
-        <!-- Główna zawartość - Flight Slider -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50"/>
-                <!-- Strzałka w lewo -->
                 <ColumnDefinition Width="*"/>
-                <!-- Obszar centralny -->
                 <ColumnDefinition Width="50"/>
-                <!-- Strzałka w prawo -->
             </Grid.ColumnDefinitions>
 
-            <!-- Strzałka w lewo -->
             <Button x:Name="prevButton" Grid.Column="0" Content="←" Style="{StaticResource arrowButtonStyle}" Click="PreviousButton_Click"/>
 
-            <!-- Obszar centralny - Flight Display -->
             <Border Grid.Column="1" Background="White" BorderBrush="#2C3E50" BorderThickness="1" Margin="10" CornerRadius="8">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="flightDisplayPanel" Style="{StaticResource flightDisplayStyle}"/>
                 </ScrollViewer>
             </Border>
 
-            <!-- Strzałka w prawo -->
             <Button x:Name="nextButton" Grid.Column="2" Content="→" Style="{StaticResource arrowButtonStyle}" Click="NextButton_Click"/>
         </Grid>
 
-        <!-- Stopka z datą i godziną -->
+
         <Label Grid.Row="2" Grid.Column="0" Name="timelbl" 
                Style="{StaticResource dateLabels}" Margin="0,0,200,0"/>
         <Label Grid.Row="2" Grid.Column="0" Name="datelbl" 

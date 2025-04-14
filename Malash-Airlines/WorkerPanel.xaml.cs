@@ -23,16 +23,13 @@ namespace Malash_Airlines {
             InitializeCollections();
             LoadAllData();
             
-            // Check if user is admin to show/hide the role management tab
             UpdateRoleManagementTabVisibility();
         }
 
         private void UpdateRoleManagementTabVisibility() {
-            // Get the Role Management tab (the last tab in this case)
             TabItem roleManagementTab = MainTabControl.Items[MainTabControl.Items.Count - 1] as TabItem;
             
             if (roleManagementTab != null) {
-                // Show the tab only for admin users
                 if (AppSession.isLoggedIn && AppSession.userRole == "admin") {
                     roleManagementTab.Visibility = Visibility.Visible;
                 } else {
@@ -50,7 +47,7 @@ namespace Malash_Airlines {
             airports = new ObservableCollection<Airport>();
             planes = new ObservableCollection<PlaneViewModel>();
             airportFlights = new ObservableCollection<Flight>();
-            businessClients = new ObservableCollection<User>(); // Nowa kolekcja
+            businessClients = new ObservableCollection<User>();
             pendingReservations = new ObservableCollection<ReservationViewModel>();
             PendingReservationsDataGrid.ItemsSource = pendingReservations;
 
@@ -60,7 +57,7 @@ namespace Malash_Airlines {
             AirportsDataGrid.ItemsSource = airports;
             PlanesDataGrid.ItemsSource = planes;
             AirportFlightsDataGrid.ItemsSource = airportFlights;
-            BusinessClientsDataGrid.ItemsSource = businessClients; // Przypisanie źródła danych
+            BusinessClientsDataGrid.ItemsSource = businessClients;
 
             UserComboBox.ItemsSource = users;
             FlightComboBox.ItemsSource = flights;
@@ -69,10 +66,10 @@ namespace Malash_Airlines {
             PlaneComboBox.ItemsSource = planes;
             BusinessDepartureComboBox.ItemsSource = airports;
             BusinessDestinationComboBox.ItemsSource = airports;
-            BusinessClientComboBox.ItemsSource = businessClients; // Nowe źródło danych
-            FullPlaneDepartureComboBox.ItemsSource = airports; // Nowe źródło danych
-            FullPlaneDestinationComboBox.ItemsSource = airports; // Nowe źródło danych
-            FullPlanePlaneComboBox.ItemsSource = planes; // Nowe źródło danych
+            BusinessClientComboBox.ItemsSource = businessClients;
+            FullPlaneDepartureComboBox.ItemsSource = airports;
+            FullPlaneDestinationComboBox.ItemsSource = airports;
+            FullPlanePlaneComboBox.ItemsSource = planes;
 
         }
 
@@ -82,12 +79,10 @@ namespace Malash_Airlines {
             LoadUsers();
             LoadFlights();
             LoadReservations();
-            LoadBusinessClients(); // Dodanie ładowania klientów biznesowych
+            LoadBusinessClients();
             LoadPendingReservations();
             LoadRoleUsers();
         }
-
-        // --- Data Loading Methods ---
 
         private void LoadUsers() {
             try {
@@ -162,7 +157,6 @@ namespace Malash_Airlines {
                     flights.Add(flight);
                 }
                 
-                // Odfiltrowanie prywatnych lotów dla ComboBox rezerwacji
                 var publicFlights = flights.Where(f => f.FlightType.ToLower() == "public").ToList();
                 FlightComboBox.ItemsSource = publicFlights;
                 FlightComboBox.Items.Refresh();
@@ -207,8 +201,6 @@ namespace Malash_Airlines {
                 MessageBox.Show($"Error loading flights for airport: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-        // --- Event Handlers ---
 
         private void RefreshBusinessClientsButton_Click(object sender, RoutedEventArgs e) {
             LoadBusinessClients();
@@ -288,7 +280,6 @@ namespace Malash_Airlines {
         private void LoadRoleUsers(string searchEmail = "") {
             try {
                 var allUsers = Database.GetUsers();
-                // Filtrujemy, aby wykluczyć użytkowników z rolą "admin"
                 var filteredUsers = allUsers
                     .Where(u => u.Role.ToLower() != "admin")
                     .Where(u => string.IsNullOrEmpty(searchEmail) || u.Email.ToLower().Contains(searchEmail.ToLower()))
@@ -304,27 +295,23 @@ namespace Malash_Airlines {
         private void ConfirmReservationButton_Click(object sender, RoutedEventArgs e) {
             if (PendingReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
                 try {
-                    // Pobieramy dane lotu, aby zaproponować domyślną cenę
                     Flight flight = Database.GetFlightById(selectedReservation.FlightID);
                     if (flight == null) {
                         throw new ApplicationException("Nie znaleziono lotu powiązanego z rezerwacją.");
                     }
 
-                    // Tworzymy okno dialogowe do wprowadzenia ceny
                     var priceInputDialog = new InputDialog(
                         "Podaj cenę rezerwacji",
                         "Cena (PLN):",
                         flight.Price.ToString());
 
                     if (priceInputDialog.ShowDialog() == true) {
-                        // Parsujemy cenę z okna dialogowego
                         if (!decimal.TryParse(priceInputDialog.ResponseText, out decimal price)) {
                             MessageBox.Show("Wprowadzona wartość nie jest prawidłową ceną.",
                                 "Błąd walidacji", MessageBoxButton.OK, MessageBoxImage.Warning);
                             return;
                         }
 
-                        // Aktualizujemy cenę lotu w bazie danych
                         bool priceUpdateSuccess = Database.UpdateFlightPrice(selectedReservation.FlightID, price);
                         if (!priceUpdateSuccess) {
                             MessageBox.Show("Nie udało się zaktualizować ceny lotu.",
@@ -332,17 +319,15 @@ namespace Malash_Airlines {
                             return;
                         }
 
-                        // Aktualizujemy status rezerwacji na "pending"
                         bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
                         if (updateSuccess) {
-                            // Tworzymy nową fakturę z wprowadzoną ceną
                             Invoice invoice = new Invoice {
                                 ReservationID = selectedReservation.ReservationID,
                                 Amount = price,
                                 IssueDate = DateTime.Now,
                                 DueDate = DateTime.Now.AddDays(7),
                                 Status = "unpaid",
-                                InvoiceNumber = "", // Metoda AddInvoice wygeneruje unikalny numer
+                                InvoiceNumber = "",
                                 Notes = $"Faktura za rezerwację ID {selectedReservation.ReservationID}"
                             };
 
@@ -355,7 +340,7 @@ namespace Malash_Airlines {
                                 "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                             LoadPendingReservations();
                             LoadReservations();
-                            LoadFlights(); // Odświeżamy listę lotów, aby zobaczyć zmienioną cenę
+                            LoadFlights();
                         } else {
                             MessageBox.Show("Nie udało się zaktualizować statusu rezerwacji.",
                                 "Błąd bazy danych", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -377,7 +362,6 @@ namespace Malash_Airlines {
         }
 
         private void OrderFullPlaneButton_Click(object sender, RoutedEventArgs e) {
-            // Sprawdzam podstawowe pola bez ceny
             if (BusinessClientComboBox.SelectedItem == null || FullPlaneDepartureComboBox.SelectedItem == null ||
                 FullPlaneDestinationComboBox.SelectedItem == null || !FullPlaneDatePicker.SelectedDate.HasValue ||
                 string.IsNullOrWhiteSpace(FullPlaneTimeComboBox.Text) || FullPlanePlaneComboBox.SelectedItem == null) {
@@ -385,9 +369,7 @@ namespace Malash_Airlines {
                 return;
             }
 
-            // Sprawdzam pole ceny osobno, używając domyślnej wartości jeśli nie podano
-            decimal price = 10000m; // Domyślna cena
-            // Próbuję odczytać cenę z pola tekstowego, jeśli istnieje
+            decimal price = 10000m;
             if (FullPlanePriceTextBox != null && !string.IsNullOrWhiteSpace(FullPlanePriceTextBox.Text)) {
                 if (!decimal.TryParse(FullPlanePriceTextBox.Text, out price)) {
                     MessageBox.Show("Price must be a valid number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -405,7 +387,7 @@ namespace Malash_Airlines {
 
                 int flightId = Database.AddNewFlight(departureId, destinationId, flightDate, flightTime, price, planeId, "private");
                 if (flightId > 0) {
-                    string seatNumber = "FULL"; // Oznaczamy jako wynajęcie całego samolotu
+                    string seatNumber = "FULL";
 
                     int reservationId = Database.AddReservation(userId, flightId, seatNumber, price);
 
@@ -484,7 +466,6 @@ namespace Malash_Airlines {
 
         private void SelectSeatButton_Click(object sender, RoutedEventArgs e) {
             if (FlightComboBox.SelectedItem is Flight selectedFlight) {
-                // Dodatkowe sprawdzenie typu lotu
                 if (selectedFlight.FlightType.ToLower() != "public") {
                     MessageBox.Show("Cannot select seats for private flights.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -518,7 +499,6 @@ namespace Malash_Airlines {
                 int userId = ((User)UserComboBox.SelectedItem).ID;
                 int flightId = ((Flight)FlightComboBox.SelectedItem).ID;
                 
-                // Sprawdzenie, czy lot nie jest prywatny
                 var selectedFlight = FlightComboBox.SelectedItem as Flight;
                 if (selectedFlight != null && selectedFlight.FlightType.ToLower() != "public") {
                     MessageBox.Show("Cannot make reservations for private flights.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);

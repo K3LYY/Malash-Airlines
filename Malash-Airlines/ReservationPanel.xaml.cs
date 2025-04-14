@@ -26,25 +26,20 @@ namespace Malash_Airlines {
         }
 
         private void CheckUserAccess() {
-            // Sprawdź, czy użytkownik ma dostęp do zakładki rezerwacji prywatnych
             bool isBusinessUser = AppSession.isLoggedIn && AppSession.CurrentUser != null &&
                                   AppSession.CurrentUser.CustomerType?.ToLower() == "business";
 
-            // Jeśli użytkownik nie jest zalogowany lub nie jest klientem biznesowym, ukryj drugą zakładkę
             PrivateTabItem.Visibility = isBusinessUser ? Visibility.Visible : Visibility.Collapsed;
 
-            // Ustaw domyślnie pierwszą zakładkę
             MainTabControl.SelectedIndex = 0;
         }
 
         private void LoadAvailableFlights() {
             try {
-                // Pobierz dostępne loty z bazy danych (tylko publiczne)
                 availableFlights = Database.GetAvailableFlights()
                     .Where(f => f.FlightType.ToLower() == "public")
                     .ToList();
 
-                // Przypisz źródło danych do listy lotów
                 FlightsListBox.ItemsSource = availableFlights;
                 FlightsListBox.DisplayMemberPath = "FlightDetails";
             } catch (Exception ex) {
@@ -54,16 +49,13 @@ namespace Malash_Airlines {
 
         private void LoadAirportsAndPlanes() {
             try {
-                // Pobierz lotniska i samoloty dla zakładki rezerwacji prywatnych
                 airports = Database.GetAirports();
                 planes = Database.GetPlanes();
 
-                // Przypisz dane do kontrolek
                 DepartureAirportComboBox.ItemsSource = airports;
                 DestinationAirportComboBox.ItemsSource = airports;
                 AircraftTypeComboBox.ItemsSource = planes;
 
-                // Ustaw domyślną datę na jutro
                 FlightDatePicker.SelectedDate = DateTime.Now.AddDays(1);
             } catch (Exception ex) {
                 MessageBox.Show($"Błąd podczas ładowania danych: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -71,13 +63,11 @@ namespace Malash_Airlines {
         }
 
         private void SetupTimeComboBox() {
-            // Wypełnij ComboBox z godzinami lotów
             FlightTimeComboBox.Items.Clear();
             for (int hour = 0; hour < 24; hour++) {
                 FlightTimeComboBox.Items.Add($"{hour:D2}:00");
                 FlightTimeComboBox.Items.Add($"{hour:D2}:30");
             }
-            // Domyślnie ustaw na 12:00
             FlightTimeComboBox.SelectedItem = "12:00";
         }
 
@@ -101,10 +91,8 @@ namespace Malash_Airlines {
             PlaneTextBlock.Text = flight.Plane;
             PriceTextBlock.Text = $"{flight.Price:C}";
 
-            // Jeśli użytkownik jest zalogowany, wyświetl cenę z uwzględnieniem rabatu
             if (AppSession.isLoggedIn && AppSession.CurrentUser != null) {
                 if (AppSession.CurrentUser.CustomerType?.ToLower() == "business") {
-                    // 20% rabatu dla klientów biznesowych
                     decimal discountedPrice = flight.Price * 0.8m;
                     PriceTextBlock.Text = $"{discountedPrice:C} (rabat 20%)";
                 }
@@ -131,14 +119,11 @@ namespace Malash_Airlines {
             if (selectedFlight == null) return;
 
             try {
-                // Pobierz zajęte miejsca dla wybranego lotu
                 var occupiedSeats = Database.GetOccupiedSeatsForFlight(selectedFlight.ID);
 
-                // Pobierz informacje o samolocie
                 var plane = Database.GetPlanes().FirstOrDefault(p => p.Name == selectedFlight.Plane);
                 string layoutType = plane?.SeatsLayout ?? "B737";
 
-                // Otwórz okno wyboru miejsc
                 var seatLayoutWindow = new SeatLayout(layoutType, occupiedSeats);
                 if (seatLayoutWindow.ShowDialog() == true) {
                     selectedSeatNumber = seatLayoutWindow.SelectedSeatNumber;
@@ -154,7 +139,6 @@ namespace Malash_Airlines {
             if (selectedFlight == null) return;
 
             try {
-                // Otwórz okno wizualizacji mapy lotu
                 FlightMapVisualization mapWindow = new FlightMapVisualization(selectedFlight);
                 mapWindow.ShowDialog();
             } catch (Exception ex) {
@@ -168,29 +152,23 @@ namespace Malash_Airlines {
                 return;
             }
 
-            // Sprawdź, czy użytkownik jest zalogowany
             if (!AppSession.isLoggedIn || AppSession.CurrentUser == null) {
                 var result = MessageBox.Show("Aby dokonać rezerwacji, musisz być zalogowany/a. Czy chcesz się zalogować?",
                     "Wymagane logowanie", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes) {
-                    // Otwórz okno logowania
                     loginWindow loginWin = new loginWindow();
-                    this.Close(); // Zamknij to okno
+                    this.Close();
                     loginWin.ShowDialog();
                 }
                 return;
             }
 
             try {
-                // Oblicz cenę
                 decimal price = selectedFlight.Price;
                 if (AppSession.CurrentUser.CustomerType?.ToLower() == "business") {
-                    // 20% rabatu dla klientów biznesowych
                     price *= 0.8m;
                 }
-
-                // Dodaj rezerwację do bazy danych (status: pending)
                 int reservationId = Database.AddReservation(
                     AppSession.CurrentUser.ID,
                     selectedFlight.ID,
@@ -199,7 +177,6 @@ namespace Malash_Airlines {
                     "pending");
 
                 if (reservationId > 0) {
-                    // Dodaj fakturę
                     Invoice invoice = new Invoice {
                         ReservationID = reservationId,
                         Amount = price,
@@ -226,7 +203,6 @@ namespace Malash_Airlines {
         }
 
         private void SendPrivateRequestButton_Click(object sender, RoutedEventArgs e) {
-            // Sprawdź, czy użytkownik jest zalogowany jako klient biznesowy
             if (!AppSession.isLoggedIn || AppSession.CurrentUser == null ||
                 AppSession.CurrentUser.CustomerType?.ToLower() != "business") {
                 MessageBox.Show("Tylko zalogowani klienci biznesowi mogą składać zapytania o prywatne loty.",
@@ -234,7 +210,6 @@ namespace Malash_Airlines {
                 return;
             }
 
-            // Sprawdź, czy wszystkie wymagane pola są wypełnione
             if (DepartureAirportComboBox.SelectedItem == null ||
                 DestinationAirportComboBox.SelectedItem == null ||
                 !FlightDatePicker.SelectedDate.HasValue ||
@@ -246,7 +221,6 @@ namespace Malash_Airlines {
             }
 
             try {
-                // Przygotuj dane do zapytania
                 int userId = AppSession.CurrentUser.ID;
                 int departureId = ((Airport)DepartureAirportComboBox.SelectedItem).ID;
                 int destinationId = ((Airport)DestinationAirportComboBox.SelectedItem).ID;
@@ -254,11 +228,9 @@ namespace Malash_Airlines {
                 string flightTime = FlightTimeComboBox.Text;
                 int planeId = ((Plane)AircraftTypeComboBox.SelectedItem).ID;
 
-                // Dodaj lot z typem "pending_private" (cena będzie ustalona później)
                 int flightId = Database.AddNewFlight(departureId, destinationId, flightDate, flightTime, 0, planeId, "private");
 
                 if (flightId > 0) {
-                    // Dodaj rezerwację ze statusem "pending" i miejscem "FULL" (cały samolot)
                     int reservationId = Database.AddReservation(userId, flightId, "FULL", 0, "unconfirmed");
 
                     if (reservationId > 0) {
@@ -266,7 +238,6 @@ namespace Malash_Airlines {
                             "Zostaniesz poinformowany o decyzji pracownika linii lotniczych.",
                             "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                        // Wyczyść formularz
                         DepartureAirportComboBox.SelectedIndex = -1;
                         DestinationAirportComboBox.SelectedIndex = -1;
                         FlightDatePicker.SelectedDate = DateTime.Now.AddDays(1);
@@ -274,7 +245,6 @@ namespace Malash_Airlines {
                         AircraftTypeComboBox.SelectedIndex = -1;
                         NotesTextBox.Text = string.Empty;
                     } else {
-                        // Jeśli rezerwacja się nie powiodła, usuń utworzony lot
                         Database.RemoveFlight(flightId);
                         MessageBox.Show("Nie udało się złożyć zapytania o prywatny lot. Spróbuj ponownie później.",
                             "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);

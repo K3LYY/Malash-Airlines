@@ -9,7 +9,6 @@
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <!-- Style for buttons -->
         <Style x:Key="mapButton" TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="10"/>
@@ -19,14 +18,11 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <!-- Gradient background -->
             <Setter Property="Background">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                         <GradientStop Color="#4682B4" Offset="0"/>
-                        <!-- Steel Blue -->
                         <GradientStop Color="#2F4F4F" Offset="1"/>
-                        <!-- Dark Slate Gray -->
                     </LinearGradientBrush>
                 </Setter.Value>
             </Setter>
@@ -36,9 +32,7 @@
                         <Setter.Value>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="#5A9BD4" Offset="0"/>
-                                <!-- Lighter blue on hover -->
                                 <GradientStop Color="#3F6F6F" Offset="1"/>
-                                <!-- Lighter gray on hover -->
                             </LinearGradientBrush>
                         </Setter.Value>
                     </Setter>
@@ -58,7 +52,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Map Canvas with border for better appearance -->
         <Border Grid.Row="0" 
                 BorderBrush="#CCCCCC" 
                 BorderThickness="1" 
@@ -71,7 +64,6 @@
                     ClipToBounds="True" />
         </Border>
 
-        <!-- Close Button -->
         <Button Grid.Row="1" 
                 Content="Close Map" 
                 Style="{StaticResource mapButton}" 

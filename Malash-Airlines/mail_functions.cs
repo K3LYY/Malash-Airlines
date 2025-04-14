@@ -8,7 +8,6 @@ using System.Windows;
 namespace Malash_Airlines {
     internal class mail_functions {
         static mail_functions() {
-            // Load environment variables from .env file
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
             Env.Load(envPath);
         }
@@ -23,7 +22,7 @@ namespace Malash_Airlines {
         }
 
         private static string lastCode = "";
-
+        //właściwości CSS aby dane zawarte w mailu były czytelne i wyświetlane poprawnie
         private static string styleMail = """
         body {
             font-family: Arial, sans-serif;
@@ -96,7 +95,7 @@ namespace Malash_Airlines {
             margin-top: 25px;
         }
         """;
-
+        //struktura maila z jednorazowym kodem dostępu w HTML, który wysyłany jest do użytkownika
         private static string GetMailReadyPassword(string oneTimeCode) {
             string mail = """
             <!DOCTYPE html>
@@ -140,7 +139,7 @@ namespace Malash_Airlines {
 
             return mail.Replace("{{CODE}}", oneTimeCode).Replace("{{STYLE}}", styleMail);
         }
-
+        //generowanie jednorazowego kodu do logowania
         public static string SendOneTimePassword(string email) {
             string oneTimePassword = GenerateOneTimePassword();
             lastCode = oneTimePassword;
