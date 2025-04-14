@@ -326,6 +326,27 @@ namespace Malash_Airlines
             }
         }
 
+        private void RefreshSessionData() {
+            if (AppSession.isLoggedIn && AppSession.CurrentUser != null) {
+                var refreshedUser = Database.GetUsers().FirstOrDefault(u => u.ID == AppSession.CurrentUser.ID);
+                if (refreshedUser != null) {
+                    AppSession.CurrentUser = refreshedUser;
+                    UpdateLoginButtonVisibility(); 
+                }
+            }
+        }
+
+ 
+        private void RefreshButton_Click(object sender, RoutedEventArgs e) {
+            RefreshSessionData();
+            LoadFlights(); 
+            if (currentFlights.Count > 0) {
+                DisplayFlight(currentFlightIndex);
+            } else {
+                DisplayNoFlightsMessage();
+            }
+        }
+
 
         private void ViewFlightMap_Click(Flight flight)
         {
