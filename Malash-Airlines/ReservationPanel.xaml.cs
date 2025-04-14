@@ -19,19 +19,16 @@ namespace Malash_Airlines {
             CheckUserAccess();
         }
 
-        // W pliku ReservationPanel.xaml.cs
+
         public ReservationPanel(int flightId) : this() {
-            // Po zainicjalizowaniu wszystkich podstawowych funkcji
-            // znajdź lot i zaznacz go
+
             try {
-                // Poczekaj, aż lista lotów się załaduje
                 if (FlightsListBox.Items.Count == 0) {
                     MessageBox.Show("Ładowanie listy lotów. Proszę spróbować ponownie za chwilę.",
                         "Ładowanie danych", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // Znajdź lot o podanym ID
                 for (int i = 0; i < FlightsListBox.Items.Count; i++) {
                     if (FlightsListBox.Items[i] is Flight flight && flight.ID == flightId) {
                         FlightsListBox.SelectedIndex = i;
@@ -39,7 +36,6 @@ namespace Malash_Airlines {
                     }
                 }
 
-                // Jeśli nie znaleziono lotu, pokaż komunikat
                 if (FlightsListBox.SelectedIndex == -1) {
                     MessageBox.Show("Nie znaleziono lotu o podanym ID. Wybierz lot z listy.",
                         "Lot nie znaleziony", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -221,13 +217,11 @@ namespace Malash_Airlines {
 
                     int invoiceId = Database.AddInvoice(invoice);
 
-                    // Pobierz pełną rezerwację do wysyłki emaila
                     var reservations = Database.GetReservations();
                     var reservation = reservations.FirstOrDefault(r => r.ID == reservationId);
 
                     if (reservation != null && invoiceId > 0) {
                         try {
-                            // Wyślij tylko fakturę mailem
                             mail_functions.SendInvoice(
                                 AppSession.CurrentUser.Email,
                                 invoice,
@@ -240,7 +234,6 @@ namespace Malash_Airlines {
                                 "Po opłaceniu otrzymasz bilet lotniczy.",
                                 "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                         } catch (Exception mailEx) {
-                            // Jeśli wysyłka maila się nie powiedzie, nadal informujemy o sukcesie rezerwacji
                             MessageBox.Show($"Rezerwacja została utworzona pomyślnie, ale wystąpił błąd podczas wysyłania faktury: {mailEx.Message}",
                                 "Rezerwacja utworzona", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }

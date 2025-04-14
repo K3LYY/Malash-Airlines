@@ -27,12 +27,10 @@ namespace Malash_Airlines {
 
             GenerateFlightTicket(reservation, user, flight, ticketPath);
 
-            // Pobierz fakturę dla tej rezerwacji
             var invoices = Database.GetInvoices(reservation.ID);
             if (invoices.Count > 0) {
                 GenerateInvoice(invoices[0], user, flight, reservation, invoicePath);
             } else {
-                // Jeśli faktura nie istnieje, generuj domyślną
                 GenerateDefaultInvoice(user, flight, reservation, invoicePath);
             }
 
@@ -91,7 +89,6 @@ namespace Malash_Airlines {
 
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                        // Invoice Table
                         col.Item().Table(table => {
                             table.ColumnsDefinition(columns => {
                                 columns.RelativeColumn(3);
@@ -103,11 +100,8 @@ namespace Malash_Airlines {
                                 header.Cell().Element(CellStyle).Background("#212529").AlignRight().Text("Kwota").FontColor(Colors.White);
                             });
 
-                            // Cena podstawowa (80% całości)
                             decimal basePrice = Math.Round(invoice.Amount * 0.8m, 2);
-                            // Podatki i opłaty (15%)
                             decimal taxes = Math.Round(invoice.Amount * 0.15m, 2);
-                            // Opłata serwisowa (5%)
                             decimal serviceFee = Math.Round(invoice.Amount * 0.05m, 2);
 
                             table.Cell().Element(CellStyle).Text($"Bilet lotniczy ({flight.Departure} → {flight.Destination})");
@@ -144,12 +138,10 @@ namespace Malash_Airlines {
         }
 
         private void GenerateDefaultInvoice(User user, Flight flight, Reservation reservation, string outputPath) {
-            // Generowanie domyślnej faktury, gdy nie ma zapisanej w bazie
             decimal amount = flight.Price;
 
-            // Zastosuj rabat dla klientów biznesowych
             if (user.CustomerType?.ToLower() == "business") {
-                amount *= 0.8m; // 20% rabatu
+                amount *= 0.8m;
             }
 
             Document.Create(container => {
@@ -173,7 +165,6 @@ namespace Malash_Airlines {
 
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-                        // Invoice Table
                         col.Item().Table(table => {
                             table.ColumnsDefinition(columns => {
                                 columns.RelativeColumn(3);
@@ -185,11 +176,8 @@ namespace Malash_Airlines {
                                 header.Cell().Element(CellStyle).Background("#212529").AlignRight().Text("Kwota").FontColor(Colors.White);
                             });
 
-                            // Cena podstawowa (80% całości)
                             decimal basePrice = Math.Round(amount * 0.8m, 2);
-                            // Podatki i opłaty (15%)
                             decimal taxes = Math.Round(amount * 0.15m, 2);
-                            // Opłata serwisowa (5%)
                             decimal serviceFee = Math.Round(amount * 0.05m, 2);
 
                             table.Cell().Element(CellStyle).Text($"Bilet lotniczy ({flight.Departure} → {flight.Destination})");

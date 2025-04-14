@@ -318,7 +318,6 @@ namespace Malash_Airlines
 
         private void BookFlight_Click(int flightId) {
             try {
-                // Otwórz panel rezerwacji z predefiniowanym lotem
                 ReservationPanel reservationPanel = new ReservationPanel(flightId);
                 reservationPanel.Show();
             } catch (Exception ex) {

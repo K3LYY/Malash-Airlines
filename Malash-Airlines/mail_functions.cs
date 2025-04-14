@@ -9,7 +9,6 @@ namespace Malash_Airlines {
     internal class mail_functions {
         static mail_functions() {
             string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
-            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
             Env.Load(envPath);
         }
 
@@ -142,7 +141,6 @@ namespace Malash_Airlines {
         }
         //generowanie jednorazowego kodu do logowania
         public static string SendOneTimePassword(string email) {
-            lastCode = oneTimePassword;
             string oneTimePassword = GenerateOneTimePassword();
             try {
                 string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
@@ -426,4 +424,4 @@ namespace Malash_Airlines {
         }
         }
     }
-}
+

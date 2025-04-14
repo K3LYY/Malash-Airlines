@@ -303,13 +303,11 @@ namespace Malash_Airlines {
                         throw new ApplicationException("Nie znaleziono lotu powiązanego z rezerwacją.");
                     }
 
-                    // Pobieramy dane użytkownika
                     User user = Database.GetUsers().FirstOrDefault(u => u.ID == selectedReservation.UserID);
                     if (user == null) {
                         throw new ApplicationException("Nie znaleziono użytkownika powiązanego z rezerwacją.");
                     }
 
-                    // Tworzymy okno dialogowe do wprowadzenia ceny
                     var priceInputDialog = new InputDialog(
                         "Podaj cenę rezerwacji",
                         "Cena (PLN):",
@@ -331,13 +329,11 @@ namespace Malash_Airlines {
 
                         bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
                         if (updateSuccess) {
-                            // Pobieramy pełne dane rezerwacji
                             var reservation = Database.GetReservations().FirstOrDefault(r => r.ID == selectedReservation.ReservationID);
                             if (reservation == null) {
                                 throw new ApplicationException("Nie udało się pobrać danych o rezerwacji.");
                             }
 
-                            // Tworzymy nową fakturę z wprowadzoną ceną
                             Invoice invoice = new Invoice {
                                 ReservationID = selectedReservation.ReservationID,
                                 Amount = price,
@@ -353,7 +349,6 @@ namespace Malash_Airlines {
                                 throw new ApplicationException("Nie udało się utworzyć faktury.");
                             }
 
-                            // Wysyłamy maila z fakturą
                             try {
                                 mail_functions.SendInvoice(user.Email, invoice, reservation, user, flight);
                                 MessageBox.Show("Rezerwacja potwierdzona, cena lotu zaktualizowana, a faktura wystawiona i wysłana pomyślnie!",
@@ -389,9 +384,7 @@ namespace Malash_Airlines {
                 return;
             }
 
-            // Sprawdzam pole ceny osobno, używając domyślnej wartości jeśli nie podano
-            decimal price = 10000m; // Domyślna cena
-                                    // Próbuję odczytać cenę z pola tekstowego, jeśli istnieje
+            decimal price = 10000m;
             if (FullPlanePriceTextBox != null && !string.IsNullOrWhiteSpace(FullPlanePriceTextBox.Text)) {
                 if (!decimal.TryParse(FullPlanePriceTextBox.Text, out price)) {
                     MessageBox.Show("Price must be a valid number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -415,19 +408,16 @@ namespace Malash_Airlines {
                     int reservationId = Database.AddReservation(userId, flightId, seatNumber, price);
 
                     if (reservationId > 0) {
-                        // Pobierz pełne dane o locie
                         Flight flight = Database.GetFlightById(flightId);
                         if (flight == null) {
                             throw new ApplicationException("Nie udało się pobrać danych o locie.");
                         }
 
-                        // Pobierz pełne dane o rezerwacji
                         Reservation reservation = Database.GetReservations().FirstOrDefault(r => r.ID == reservationId);
                         if (reservation == null) {
                             throw new ApplicationException("Nie udało się pobrać danych o rezerwacji.");
                         }
 
-                        // Utwórz fakturę
                         Invoice invoice = new Invoice {
                             ReservationID = reservationId,
                             Amount = price,
