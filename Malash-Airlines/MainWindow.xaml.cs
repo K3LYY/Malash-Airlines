@@ -358,16 +358,17 @@ namespace Malash_Airlines
             }
         }
 
-        private void BookFlight_Click(int flightId)
-        {
-            // You can implement flight booking functionality here
-            // For example, open a seat selection window
-            MessageBox.Show($"Booking flight #{flightId}", "Book Flight", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Uncomment and modify this to implement actual booking
-            // SeatLayout seatLayout = new SeatLayout(flightId);
-            // seatLayout.ShowDialog();
+        private void BookFlight_Click(int flightId) {
+            try {
+                // Otwórz panel rezerwacji z predefiniowanym lotem
+                ReservationPanel reservationPanel = new ReservationPanel(flightId);
+                reservationPanel.Show();
+            } catch (Exception ex) {
+                MessageBox.Show($"Błąd podczas otwierania panelu rezerwacji: {ex.Message}",
+                    "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
 
         private void ViewFlightMap_Click(Flight flight)
         {

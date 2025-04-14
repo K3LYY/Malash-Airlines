@@ -19,6 +19,38 @@ namespace Malash_Airlines {
             CheckUserAccess();
         }
 
+        // W pliku ReservationPanel.xaml.cs
+        public ReservationPanel(int flightId) : this() {
+            // Po zainicjalizowaniu wszystkich podstawowych funkcji
+            // znajdź lot i zaznacz go
+            try {
+                // Poczekaj, aż lista lotów się załaduje
+                if (FlightsListBox.Items.Count == 0) {
+                    MessageBox.Show("Ładowanie listy lotów. Proszę spróbować ponownie za chwilę.",
+                        "Ładowanie danych", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Znajdź lot o podanym ID
+                for (int i = 0; i < FlightsListBox.Items.Count; i++) {
+                    if (FlightsListBox.Items[i] is Flight flight && flight.ID == flightId) {
+                        FlightsListBox.SelectedIndex = i;
+                        break;
+                    }
+                }
+
+                // Jeśli nie znaleziono lotu, pokaż komunikat
+                if (FlightsListBox.SelectedIndex == -1) {
+                    MessageBox.Show("Nie znaleziono lotu o podanym ID. Wybierz lot z listy.",
+                        "Lot nie znaleziony", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show($"Błąd podczas wyszukiwania lotu: {ex.Message}",
+                    "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
         private void LoadData() {
             LoadAvailableFlights();
             LoadAirportsAndPlanes();
@@ -206,13 +238,39 @@ namespace Malash_Airlines {
                         Status = "unpaid",
                         IssueDate = DateTime.Now,
                         DueDate = DateTime.Now.AddDays(7),
+                        InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}",
                         Notes = $"Rezerwacja miejsca {selectedSeatNumber} na lot {selectedFlight.ID}"
                     };
 
                     int invoiceId = Database.AddInvoice(invoice);
 
-                    MessageBox.Show("Rezerwacja została utworzona pomyślnie! Faktura została wystawiona.",
-                        "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Pobierz pełną rezerwację do wysyłki emaila
+                    var reservations = Database.GetReservations();
+                    var reservation = reservations.FirstOrDefault(r => r.ID == reservationId);
+
+                    if (reservation != null && invoiceId > 0) {
+                        try {
+                            // Wyślij tylko fakturę mailem
+                            mail_functions.SendInvoice(
+                                AppSession.CurrentUser.Email,
+                                invoice,
+                                reservation,
+                                AppSession.CurrentUser,
+                                selectedFlight
+                            );
+
+                            MessageBox.Show("Rezerwacja została utworzona pomyślnie! Faktura została wystawiona i wysłana na Twój adres email. " +
+                                "Po opłaceniu otrzymasz bilet lotniczy.",
+                                "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                        } catch (Exception mailEx) {
+                            // Jeśli wysyłka maila się nie powiedzie, nadal informujemy o sukcesie rezerwacji
+                            MessageBox.Show($"Rezerwacja została utworzona pomyślnie, ale wystąpił błąd podczas wysyłania faktury: {mailEx.Message}",
+                                "Rezerwacja utworzona", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    } else {
+                        MessageBox.Show("Rezerwacja została utworzona pomyślnie! Faktura została wystawiona.",
+                            "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
 
                     ClearSelections();
                 } else {
@@ -224,6 +282,8 @@ namespace Malash_Airlines {
                     "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
 
         private void SendPrivateRequestButton_Click(object sender, RoutedEventArgs e) {
             // Sprawdź, czy użytkownik jest zalogowany jako klient biznesowy

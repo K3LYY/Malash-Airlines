@@ -180,14 +180,11 @@ namespace Malash_Airlines
             }
         }
 
-        private void PayReservation_Click(object sender, RoutedEventArgs e)
-        {
+        private void PayReservation_Click(object sender, RoutedEventArgs e) {
             var selectedReservation = reservationsDataGrid.SelectedItem as UserReservation;
 
-            if (selectedReservation != null)
-            {
-                try
-                {
+            if (selectedReservation != null) {
+                try {
                     // Simple payment confirmation dialog
                     MessageBoxResult result = MessageBox.Show(
                         $"Confirm payment of {selectedReservation.Price:C} for your flight from {selectedReservation.Departure} to {selectedReservation.Destination}?",
@@ -195,15 +192,44 @@ namespace Malash_Airlines
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
 
-                    if (result == MessageBoxResult.Yes)
-                    {
+                    if (result == MessageBoxResult.Yes) {
                         // Update reservation status in database
                         bool updateResult = Database.UpdateReservation(selectedReservation.ReservationID, "confirmed");
 
-                        if (updateResult)
-                        {
+                        if (updateResult) {
                             // Update status in local collection
                             selectedReservation.Status = "confirmed";
+
+                            // Update invoice status to paid
+                            var invoices = Database.GetInvoices(selectedReservation.ReservationID);
+                            Invoice paidInvoice = null;
+
+                            if (invoices.Count > 0) {
+                                paidInvoice = invoices[0];
+                                paidInvoice.Status = "paid";
+                                paidInvoice.PaymentDate = DateTime.Now;
+                                Database.UpdateInvoice(paidInvoice);
+                            }
+
+                            // Get complete reservation and flight data for email
+                            var reservation = Database.GetReservations().FirstOrDefault(r => r.ID == selectedReservation.ReservationID);
+                            var flight = Database.GetFlightById(selectedReservation.FlightID);
+
+                            if (reservation != null && flight != null) {
+                                try {
+                                    // Send ticket and invoice via email
+                                    mail_functions.SendReservationDocuments(_currentUser.Email, reservation, _currentUser, flight);
+                                    MessageBox.Show("Payment successful! Your reservation is now confirmed. Flight ticket and invoice have been sent to your email.",
+                                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                                } catch (Exception mailEx) {
+                                    // If email fails, still confirm successful payment
+                                    MessageBox.Show($"Payment successful, but there was an error sending your documents: {mailEx.Message}",
+                                        "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                }
+                            } else {
+                                MessageBox.Show("Payment successful! Your reservation is now confirmed.",
+                                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
 
                             // Refresh DataGrid
                             reservationsDataGrid.Items.Refresh();
@@ -212,22 +238,19 @@ namespace Malash_Airlines
                             ReservationsDataGrid_SelectionChanged(null, null);
 
                             statusMessage.Text = "Payment successful";
-                            MessageBox.Show("Payment successful! Your reservation is now confirmed.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else
-                        {
+                        } else {
                             statusMessage.Text = "Payment failed";
                             MessageBox.Show("Payment processing failed. Please try again later.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     statusMessage.Text = "Error processing payment";
                     MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
+
+
 
         private void CancelReservation_Click(object sender, RoutedEventArgs e)
         {

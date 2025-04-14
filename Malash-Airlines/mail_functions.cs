@@ -4,12 +4,14 @@ using System.Net.Mail;
 using System.IO;
 using DotNetEnv;
 using System.Windows;
+using iText.Layout.Properties;
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Media.Media3D;
 
 namespace Malash_Airlines {
     internal class mail_functions {
         static mail_functions() {
-            // Load environment variables from .env file
-            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..", ".env");
+            string envPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", ".env");
             Env.Load(envPath);
         }
 
@@ -19,7 +21,7 @@ namespace Malash_Airlines {
             for (int i = 0; i < 6; i++) {
                 oneTimePassword += random.Next(0, 9);
             }
-            return oneTimePassword;
+            return lastCode = oneTimePassword;
         }
 
         private static string lastCode = "";
@@ -143,7 +145,6 @@ namespace Malash_Airlines {
 
         public static string SendOneTimePassword(string email) {
             string oneTimePassword = GenerateOneTimePassword();
-            lastCode = oneTimePassword;
             try {
                 string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
                 string fromEmail = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
@@ -233,5 +234,197 @@ namespace Malash_Airlines {
             }
         }
 
+        public static void SendReservationDocuments(string email, Reservation reservation, User user, Flight flight) {
+            try {
+                string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+                string fromEmail = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
+
+                PDFGenerationService pdfService = new PDFGenerationService();
+                var pdfResults = pdfService.GenerateDocuments(reservation, user, flight);
+
+                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com") {
+                    Port = 587,
+                    Credentials = new NetworkCredential(fromEmail, emailPassword),
+                    EnableSsl = true,
+                };
+
+                string style = """
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f5f5f5; padding: 20px; }
+            .container { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            h1 { color: #212529; }
+            h2 { color: #4682B4; }
+            p { font-size: 16px; color: #333; }
+            .footer { margin-top: 20px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+            .flight-details { background-color: #f8f8f8; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .amount { font-size: 24px; font-weight: bold; color: #212529; }
+            .status { font-weight: bold; }
+        </style>
+        """;
+
+                string htmlBody = $"""
+        <!DOCTYPE html>
+        <html lang="pl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Twoja rezerwacja w Malash Airlines</title>
+            {style}
+        </head>
+        <body>
+            <div class="container">
+                <h1>Twoja rezerwacja w Malash Airlines</h1>
+                <p>Witaj {user.Name},</p>
+                <p>Potwierdzamy utworzenie rezerwacji na lot z {flight.Departure} do {flight.Destination}.</p>
+                
+                <div class="flight-details">
+                    <h2>Szczegóły lotu:</h2>
+                    <p><strong>Numer lotu:</strong> {flight.ID}</p>
+                    <p><strong>Data:</strong> {flight.Date:dd MMMM yyyy}</p>
+                    <p><strong>Czas wejścia na pokład:</strong> {flight.Time}</p>
+                    <p><strong>Miejsce:</strong> {reservation.SeatNumber}</p>
+                    <p><strong>Status:</strong> {reservation.Status}</p>
+                </div>
+                
+                <p>W załącznikach znajdziesz bilet oraz fakturę za rezerwację.</p>
+                <p>Prosimy o przybycie na lotnisko co najmniej 2 godziny przed wylotem.</p>
+                
+                <div class="footer">
+                    <p>Ta wiadomość została wygenerowana automatycznie. Prosimy na nią nie odpowiadać.</p>
+                    <p>&copy; 2025 Malash Airlines. Wszelkie prawa zastrzeżone.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """;
+
+                MailMessage mailMessage = new MailMessage {
+                    From = new MailAddress(fromEmail, "Malash Airlines"),
+                    Subject = $"Potwierdzenie rezerwacji lotu {flight.ID}: {flight.Departure} → {flight.Destination}",
+                    Body = htmlBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMessage.To.Add(email);
+
+                if (File.Exists(pdfResults.TicketPath)) {
+                    mailMessage.Attachments.Add(new Attachment(pdfResults.TicketPath));
+                }
+
+                if (File.Exists(pdfResults.InvoicePath)) {
+                    mailMessage.Attachments.Add(new Attachment(pdfResults.InvoicePath));
+                }
+
+                smtpClient.Send(mailMessage);
+                Console.WriteLine("Dokumenty rezerwacji zostały wysłane pomyślnie!");
+
+                try {
+                    if (File.Exists(pdfResults.TicketPath)) File.Delete(pdfResults.TicketPath);
+                    if (File.Exists(pdfResults.InvoicePath)) File.Delete(pdfResults.InvoicePath);
+                } catch (Exception ex) {
+                    Console.WriteLine($"Błąd podczas usuwania plików tymczasowych: {ex.Message}");
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"Błąd podczas wysyłania dokumentów rezerwacji: {ex.Message}");
+            }
+        }
+
+        public static void SendInvoice(string email, Invoice invoice, Reservation reservation, User user, Flight flight) {
+            try {
+                string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+                string fromEmail = Environment.GetEnvironmentVariable("EMAIL_ADDRESS");
+
+                PDFGenerationService pdfService = new PDFGenerationService();
+                var pdfResults = pdfService.GenerateDocuments(reservation, user, flight);
+
+                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com") {
+                    Port = 587,
+                    Credentials = new NetworkCredential(fromEmail, emailPassword),
+                    EnableSsl = true,
+                };
+
+                string statusText = invoice.Status.ToLower() switch {
+                    "paid" => "Opłacona",
+                    "unpaid" => "Nieopłacona - wymaga płatności",
+                    "pending" => "Oczekująca na płatność",
+                    "cancelled" => "Anulowana",
+                    _ => invoice.Status
+                };
+
+                string style = """
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f5f5f5; padding: 20px; }
+            .container { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            h1 { color: #212529; }
+            h2 { color: #4682B4; }
+            p { font-size: 16px; color: #333; }
+            .footer { margin-top: 20px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+            .invoice-details { background-color: #f8f8f8; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .amount { font-size: 24px; font-weight: bold; color: #212529; }
+            .status { font-weight: bold; }
+        </style>
+        """;
+
+                string htmlBody = $"""
+        <!DOCTYPE html>
+        <html lang="pl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Faktura {invoice.InvoiceNumber}</title>
+            {style}
+        </head>
+        <body>
+            <div class="container">
+                <h1>Faktura - Malash Airlines</h1>
+                <p>Witaj {user.Name},</p>
+                <p>W załączniku znajdziesz fakturę za rezerwację lotu z {flight.Departure} do {flight.Destination}.</p>
+                
+                <div class="invoice-details">
+                    <h2>Szczegóły faktury:</h2>
+                    <p><strong>Numer faktury:</strong> {invoice.InvoiceNumber}</p>
+                    <p><strong>Data wystawienia:</strong> {invoice.IssueDate:dd MMMM yyyy}</p>
+                    <p><strong>Termin płatności:</strong> {invoice.DueDate:dd MMMM yyyy}</p>
+                    <p class="amount">Kwota: {invoice.Amount:C}</p>
+                    <p class="status">Status: {statusText}</p>
+                </div>
+                
+                <p>Dziękujemy za wybranie Malash Airlines.</p>
+                
+                <div class="footer">
+                    <p>Ta wiadomość została wygenerowana automatycznie. Prosimy na nią nie odpowiadać.</p>
+                    <p>&copy; 2025 Malash Airlines. Wszelkie prawa zastrzeżone.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """;
+
+                MailMessage mailMessage = new MailMessage {
+                    From = new MailAddress(fromEmail, "Malash Airlines"),
+                    Subject = $"Faktura {invoice.InvoiceNumber} - Malash Airlines",
+                    Body = htmlBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMessage.To.Add(email);
+
+                if (File.Exists(pdfResults.InvoicePath)) {
+                    mailMessage.Attachments.Add(new Attachment(pdfResults.InvoicePath));
+                }
+
+                smtpClient.Send(mailMessage);
+                Console.WriteLine("Faktura została wysłana pomyślnie!");
+
+                try {
+                    if (File.Exists(pdfResults.TicketPath)) File.Delete(pdfResults.TicketPath);
+                    if (File.Exists(pdfResults.InvoicePath)) File.Delete(pdfResults.InvoicePath);
+                } catch (Exception ex) {
+                    Console.WriteLine($"Błąd podczas usuwania plików tymczasowych: {ex.Message}");
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"Błąd podczas wysyłania faktury: {ex.Message}");
+            }
+        }
     }
 }

@@ -300,6 +300,9 @@ namespace Malash_Airlines {
             }
         }
 
+        private void RefreshPendingReservationsButton_Click(object sender, RoutedEventArgs e) {
+            LoadPendingReservations();
+        }
 
         private void ConfirmReservationButton_Click(object sender, RoutedEventArgs e) {
             if (PendingReservationsDataGrid.SelectedItem is ReservationViewModel selectedReservation) {
@@ -308,6 +311,12 @@ namespace Malash_Airlines {
                     Flight flight = Database.GetFlightById(selectedReservation.FlightID);
                     if (flight == null) {
                         throw new ApplicationException("Nie znaleziono lotu powiązanego z rezerwacją.");
+                    }
+
+                    // Pobieramy dane użytkownika
+                    User user = Database.GetUsers().FirstOrDefault(u => u.ID == selectedReservation.UserID);
+                    if (user == null) {
+                        throw new ApplicationException("Nie znaleziono użytkownika powiązanego z rezerwacją.");
                     }
 
                     // Tworzymy okno dialogowe do wprowadzenia ceny
@@ -335,6 +344,12 @@ namespace Malash_Airlines {
                         // Aktualizujemy status rezerwacji na "pending"
                         bool updateSuccess = Database.UpdateReservation(selectedReservation.ReservationID, "pending");
                         if (updateSuccess) {
+                            // Pobieramy pełne dane rezerwacji
+                            var reservation = Database.GetReservations().FirstOrDefault(r => r.ID == selectedReservation.ReservationID);
+                            if (reservation == null) {
+                                throw new ApplicationException("Nie udało się pobrać danych o rezerwacji.");
+                            }
+
                             // Tworzymy nową fakturę z wprowadzoną ceną
                             Invoice invoice = new Invoice {
                                 ReservationID = selectedReservation.ReservationID,
@@ -342,7 +357,7 @@ namespace Malash_Airlines {
                                 IssueDate = DateTime.Now,
                                 DueDate = DateTime.Now.AddDays(7),
                                 Status = "unpaid",
-                                InvoiceNumber = "", // Metoda AddInvoice wygeneruje unikalny numer
+                                InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}",
                                 Notes = $"Faktura za rezerwację ID {selectedReservation.ReservationID}"
                             };
 
@@ -351,8 +366,16 @@ namespace Malash_Airlines {
                                 throw new ApplicationException("Nie udało się utworzyć faktury.");
                             }
 
-                            MessageBox.Show("Rezerwacja potwierdzona, cena lotu zaktualizowana, a faktura wystawiona pomyślnie!",
-                                "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                            // Wysyłamy maila z fakturą
+                            try {
+                                mail_functions.SendInvoice(user.Email, invoice, reservation, user, flight);
+                                MessageBox.Show("Rezerwacja potwierdzona, cena lotu zaktualizowana, a faktura wystawiona i wysłana pomyślnie!",
+                                    "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                            } catch (Exception mailEx) {
+                                MessageBox.Show($"Rezerwacja potwierdzona, ale wystąpił błąd podczas wysyłania faktury: {mailEx.Message}",
+                                    "Częściowy sukces", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+
                             LoadPendingReservations();
                             LoadReservations();
                             LoadFlights(); // Odświeżamy listę lotów, aby zobaczyć zmienioną cenę
@@ -371,11 +394,6 @@ namespace Malash_Airlines {
             }
         }
 
-
-        private void RefreshPendingReservationsButton_Click(object sender, RoutedEventArgs e) {
-            LoadPendingReservations();
-        }
-
         private void OrderFullPlaneButton_Click(object sender, RoutedEventArgs e) {
             // Sprawdzam podstawowe pola bez ceny
             if (BusinessClientComboBox.SelectedItem == null || FullPlaneDepartureComboBox.SelectedItem == null ||
@@ -387,7 +405,7 @@ namespace Malash_Airlines {
 
             // Sprawdzam pole ceny osobno, używając domyślnej wartości jeśli nie podano
             decimal price = 10000m; // Domyślna cena
-            // Próbuję odczytać cenę z pola tekstowego, jeśli istnieje
+                                    // Próbuję odczytać cenę z pola tekstowego, jeśli istnieje
             if (FullPlanePriceTextBox != null && !string.IsNullOrWhiteSpace(FullPlanePriceTextBox.Text)) {
                 if (!decimal.TryParse(FullPlanePriceTextBox.Text, out price)) {
                     MessageBox.Show("Price must be a valid number.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -396,7 +414,8 @@ namespace Malash_Airlines {
             }
 
             try {
-                int userId = ((User)BusinessClientComboBox.SelectedItem).ID;
+                User client = (User)BusinessClientComboBox.SelectedItem;
+                int userId = client.ID;
                 int departureId = ((Airport)FullPlaneDepartureComboBox.SelectedItem).ID;
                 int destinationId = ((Airport)FullPlaneDestinationComboBox.SelectedItem).ID;
                 DateTime flightDate = FullPlaneDatePicker.SelectedDate.Value;
@@ -410,16 +429,40 @@ namespace Malash_Airlines {
                     int reservationId = Database.AddReservation(userId, flightId, seatNumber, price);
 
                     if (reservationId > 0) {
-                        try {
-                            User client = (User)BusinessClientComboBox.SelectedItem;
-                            mail_functions.SendBookingConfirmation(client.Email, "");
-                        } catch (Exception ex) {
-                            MessageBox.Show($"Error sending confirmation email: {ex.Message}", "Email Error",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                        // Pobierz pełne dane o locie
+                        Flight flight = Database.GetFlightById(flightId);
+                        if (flight == null) {
+                            throw new ApplicationException("Nie udało się pobrać danych o locie.");
                         }
 
-                        MessageBox.Show($"Full plane ordered successfully for {((User)BusinessClientComboBox.SelectedItem).Name}! Flight ID: {flightId}, Reservation ID: {reservationId}",
-                            "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        // Pobierz pełne dane o rezerwacji
+                        Reservation reservation = Database.GetReservations().FirstOrDefault(r => r.ID == reservationId);
+                        if (reservation == null) {
+                            throw new ApplicationException("Nie udało się pobrać danych o rezerwacji.");
+                        }
+
+                        // Utwórz fakturę
+                        Invoice invoice = new Invoice {
+                            ReservationID = reservationId,
+                            Amount = price,
+                            IssueDate = DateTime.Now,
+                            DueDate = DateTime.Now.AddDays(7),
+                            Status = "unpaid",
+                            InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}",
+                            Notes = $"Faktura za rezerwację prywatnego lotu ID {reservationId}"
+                        };
+
+                        int invoiceId = Database.AddInvoice(invoice);
+
+                        try {
+                            mail_functions.SendReservationDocuments(client.Email, reservation, client, flight);
+                            MessageBox.Show($"Full plane ordered successfully for {client.Name}! Documents have been sent by email.",
+                                "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        } catch (Exception ex) {
+                            MessageBox.Show($"Full plane ordered successfully for {client.Name}, but there was an error sending email: {ex.Message}",
+                                "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+
                         LoadFlights();
                         LoadReservations();
                         LoadBusinessClients();
@@ -443,6 +486,7 @@ namespace Malash_Airlines {
                 MessageBox.Show($"Error ordering full plane: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void RefreshUsersButton_Click(object sender, RoutedEventArgs e) {
             LoadUsers();
