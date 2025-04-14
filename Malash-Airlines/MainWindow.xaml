@@ -120,7 +120,7 @@
             <!-- Kategorie -->
             <Button Grid.Column="1" Content="Rezerwacje" Width="Auto" Margin="5" Click="Category1Button_Click"/>
 
-            <Button Grid.Column="2" Content="KAT2" Width="Auto" Margin="5"/>
+            
             <Button Grid.Column="3" Content="Dane użytkownika" Width="Auto" Margin="5" Click="Button_Click"/>
             <Button Grid.Column="4" Content="Panel Pracownika" Width="Auto" Margin="5" x:Name="category4Button" 
                     Click="Category4Button_Click" Visibility="Collapsed"/>
