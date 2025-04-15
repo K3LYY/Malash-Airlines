@@ -94,14 +94,6 @@ namespace Malash_Airlines
 
                 Label lbl = new Label();
 
-                Label etykieta = new Label();
-                etykieta.Content = AppSession.eMail;
-                etykieta.FontSize = 18;
-                etykieta.Margin = new Thickness(10);
-                Grid.SetRow(etykieta, 2); 
-                Grid.SetColumn(etykieta, 2);
-                windowGrid.Children.Add(etykieta);
-
                 UpdateCategoryVisibility();
             }
         }
