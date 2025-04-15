@@ -169,7 +169,7 @@ namespace Malash_Airlines
 
             TextBlock flightHeader = new TextBlock
             {
-                Text = $"Flight #{flight.ID}",
+                Text = $"Lot #{flight.ID}",
                 FontSize = 24,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80)),
@@ -189,7 +189,7 @@ namespace Malash_Airlines
 
             TextBlock dateTimeInfo = new TextBlock
             {
-                Text = $"{flight.Date.ToString("dddd, MMMM d, yyyy")} at {flight.Time}",
+                Text = $"{flight.Date.ToString("dddd, MMMM d, yyyy")} o godz. {flight.Time}",
                 FontSize = 18,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80)),
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -198,7 +198,7 @@ namespace Malash_Airlines
 
             TextBlock priceInfo = new TextBlock
             {
-                Text = $"Price: ${flight.Price}",
+                Text = $"Cena: ${flight.Price}",
                 FontSize = 20,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80)),
@@ -208,7 +208,7 @@ namespace Malash_Airlines
 
             TextBlock aircraftInfo = new TextBlock
             {
-                Text = $"Aircraft: {flight.Plane}",
+                Text = $"Samolot: {flight.Plane}",
                 FontSize = 16,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80)),
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -224,7 +224,7 @@ namespace Malash_Airlines
 
             Button bookButton = new Button
             {
-                Content = "Book Now",
+                Content = "Rezerwuj Teraz",
                 FontSize = 16,
                 Width = 180,
                 Height = 45,
@@ -235,7 +235,7 @@ namespace Malash_Airlines
 
             Button viewMapButton = new Button
             {
-                Content = "View Route Map",
+                Content = "Trasa Lotu",
                 FontSize = 16,
                 Width = 180,
                 Height = 45,
@@ -249,7 +249,7 @@ namespace Malash_Airlines
 
             TextBlock navIndicator = new TextBlock
             {
-                Text = $"Flight {index + 1} of {currentFlights.Count}",
+                Text = $"Lot {index + 1} z {currentFlights.Count}",
                 FontSize = 14,
                 Foreground = new SolidColorBrush(Color.FromRgb(128, 128, 128)),
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -277,7 +277,7 @@ namespace Malash_Airlines
 
             TextBlock noFlightsMessage = new TextBlock
             {
-                Text = "No upcoming flights available",
+                Text = "Brak nadchodzących lotów",
                 FontSize = 24,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(128, 128, 128)),

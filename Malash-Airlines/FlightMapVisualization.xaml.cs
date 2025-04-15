@@ -80,7 +80,7 @@ namespace Malash_Airlines
         {
             InitializeComponent();
             flight = flightData;
-            this.Title = $"Flight Map: {flight.Departure} to {flight.Destination}";
+            this.Title = $"Mapa Lotu: {flight.Departure} do {flight.Destination}";
             DrawFlightMap();
         }
 
@@ -574,9 +574,10 @@ namespace Malash_Airlines
 
             TextBlock legendTitle = new TextBlock
             {
-                Text = "Flight Legend",
+                Text = "Legenda Lotu",
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Colors.Black)
+                Foreground = new SolidColorBrush(Colors.Black),
+                Margin = new Thickness(0, 0, -100, 0)
             };
             Canvas.SetRight(legendTitle, 105);
             Canvas.SetBottom(legendTitle, 90);
@@ -594,7 +595,7 @@ namespace Malash_Airlines
 
             TextBlock departureText = new TextBlock
             {
-                Text = "Departure",
+                Text = "Odlot",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetRight(departureText, 30);
@@ -613,7 +614,7 @@ namespace Malash_Airlines
 
             TextBlock destinationText = new TextBlock
             {
-                Text = "Destination",
+                Text = "Cel podróży",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetRight(destinationText, 30);
@@ -632,7 +633,7 @@ namespace Malash_Airlines
 
             TextBlock otherAirportsText = new TextBlock
             {
-                Text = "Other Airports",
+                Text = "Inne Lotniska",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetRight(otherAirportsText, 30);
@@ -658,7 +659,7 @@ namespace Malash_Airlines
 
             TextBlock infoTitle = new TextBlock
             {
-                Text = "Flight Information",
+                Text = "Informacje Lotu",
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Colors.Black)
             };
@@ -668,7 +669,7 @@ namespace Malash_Airlines
 
             TextBlock flightId = new TextBlock
             {
-                Text = $"Flight #: {flight.ID}",
+                Text = $"Lot #: {flight.ID}",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetLeft(flightId, 20);
@@ -677,7 +678,7 @@ namespace Malash_Airlines
 
             TextBlock flightDate = new TextBlock
             {
-                Text = $"Date: {flight.Date.ToString("MM/dd/yyyy")}",
+                Text = $"Data: {flight.Date.ToString("MM/dd/yyyy")}",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetLeft(flightDate, 20);
@@ -686,7 +687,7 @@ namespace Malash_Airlines
 
             TextBlock flightTime = new TextBlock
             {
-                Text = $"Time: {flight.Time}",
+                Text = $"Czas: {flight.Time}",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetLeft(flightTime, 20);
@@ -695,7 +696,7 @@ namespace Malash_Airlines
             
             TextBlock aircraftInfo = new TextBlock
             {
-                Text = $"Aircraft: {flight.Plane}",
+                Text = $"Samolot: {flight.Plane}",
                 Foreground = new SolidColorBrush(Colors.Black)
             };
             Canvas.SetLeft(aircraftInfo, 20);
